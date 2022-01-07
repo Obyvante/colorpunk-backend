@@ -1,0 +1,34 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+}
+
+group = 'com.barden'
+version = '0.0.1'
+sourceCompatibility = '17'
+
+sourceSets {
+    main.java.srcDirs = ['src/main/java']
+    main.resources.srcDirs = ['src/main/resources']
+
+    test.java.srcDirs = ['src/test/java']
+    test.resources.srcDirs = ['src/test/resources']
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.6.2'
+    implementation files('libraries/barden-java-library.jar')
+}
+
+test {
+    useJUnit()
+}
+
+configurations {
+    bootJar.archiveName = 'bravo.jar'
+}

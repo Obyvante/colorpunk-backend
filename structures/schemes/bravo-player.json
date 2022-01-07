@@ -1,0 +1,59 @@
+{
+  "id": "ROBLOX_USER_ID",
+  "join-date": "BRAVO_JOIN_DATE",
+  "currencies": {
+    "GOLD": 0
+  },
+  "inventory": {
+    "pets": {
+      "actives": [
+        "UUID-1",
+        "UUID-2"
+      ],
+      "content": {
+        "UUID-1": {
+          "id": 0
+        }
+      }
+    },
+    "trails": {
+      "follow": {
+        "active": -1,
+        "content": [
+          1,
+          2,
+          3
+        ]
+      },
+      "feet": {
+        "active": -1,
+        "content": [
+          1,
+          2,
+          3
+        ]
+      }
+    }
+  },
+  "stats": {
+    "WALK_SPEED": 3.5,
+    "JUMP_HEIGHT": 0.1
+  },
+  "settings": {
+    "speaker": {
+      "status": true,
+      "volume": 10
+    },
+    "sfx": {
+      "status": true,
+      "volume": 10
+    },
+    "music": {
+      "status": true,
+      "volume": 10
+    },
+    "auto-accept": {
+      "status": true
+    }
+  }
+}

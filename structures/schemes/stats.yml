@@ -1,0 +1,6 @@
+WALK_SPEED:
+  default: 0.0
+  maximum: 25.0
+JUMP_HEIGHT:
+  default: 0.0
+  maximum: 25.0
