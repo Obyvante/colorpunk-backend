@@ -1,0 +1,16 @@
+[1]
+name = "Follow Trail #1"
+assetId = "8476561568"
+type = "FOLLOW"
+[2]
+name = "Feet Trail #1"
+assetId = "8476561568"
+type = "FEET"
+[3]
+name = "Feet Trail #2"
+assetId = "8476561568"
+type = "FEET"
+[4]
+name = "Follow Trail #2"
+assetId = "8476561568"
+type = "FOLLOW"

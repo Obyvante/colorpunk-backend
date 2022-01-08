@@ -14,6 +14,22 @@ public final class HTTPRepository {
      * Creates response.
      *
      * @param success    Is success.
+     * @return Response. (JSON OBJECT)
+     */
+    @Nonnull
+    public static JsonObject createResponse(boolean success) {
+        //Creates json object.
+        JsonObject json_object = new JsonObject();
+        //Configures json object.
+        json_object.addProperty("success", success);
+        //Returns created json object.
+        return json_object;
+    }
+
+    /**
+     * Creates response.
+     *
+     * @param success    Is success.
      * @param enumObject Enum.
      * @return Response. (JSON OBJECT)
      */

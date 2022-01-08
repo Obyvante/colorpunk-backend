@@ -17,22 +17,15 @@
       }
     },
     "trails": {
-      "follow": {
-        "active": -1,
-        "content": [
-          1,
-          2,
-          3
-        ]
+      "actives": {
+        "FOLLOW": -1,
+        "FEET": -1
       },
-      "feet": {
-        "active": -1,
-        "content": [
-          1,
-          2,
-          3
-        ]
-      }
+      "content": [
+        1,
+        2,
+        3
+      ]
     }
   },
   "stats": {

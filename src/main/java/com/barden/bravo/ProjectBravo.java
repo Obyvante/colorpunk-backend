@@ -1,7 +1,9 @@
 package com.barden.bravo;
 
 import com.barden.bravo.pet.PetRepository;
+import com.barden.bravo.player.PlayerRepository;
 import com.barden.bravo.settings.Settings;
+import com.barden.bravo.trail.TrailRepository;
 import com.barden.library.BardenJavaLibrary;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -39,9 +41,15 @@ public class ProjectBravo {
 
         //Initializes barden java library.
         BardenJavaLibrary.initialize();
+
         //Initializes settings.
         Settings.initialize();
-        //Initializes pet.
+        //Initializes pet repository.
         PetRepository.initialize();
+        //Initializes trail repository.
+        TrailRepository.initialize();
+
+        //Initializes player repository.
+        PlayerRepository.initialize();
     }
 }

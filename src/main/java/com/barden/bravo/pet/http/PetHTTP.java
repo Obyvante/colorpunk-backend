@@ -21,7 +21,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/v1/pet")
-public final class PetHTTP {
+public class PetHTTP {
 
     /**
      * Results.
