@@ -35,10 +35,22 @@ public class PlayerHTTP {
      * Updates player by its id.
      *
      * @param json_object Player json object.
+     * @return Update result.
      */
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JsonObject> updateById(@Nonnull @RequestBody JsonObject json_object) {
         return new ResponseEntity<>(PlayerHTTPFunctionality.updateById(json_object), HttpStatus.OK);
+    }
+
+    /**
+     * Updates players.
+     *
+     * @param json_object Players object array.
+     * @return Update result.
+     */
+    @PostMapping(value = "/updates", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<JsonObject> update(@Nonnull @RequestBody JsonObject json_object) {
+        return new ResponseEntity<>(PlayerHTTPFunctionality.update(json_object), HttpStatus.OK);
     }
 
     /**
@@ -52,15 +64,16 @@ public class PlayerHTTP {
      * player object then save it to the database and cache
      * then returns it.
      *
-     * @param id Roblox user id.
+     * @param id     Roblox user id.
+     * @param insert Should insert new player to the database if it is not exist.
      * @return Response entity. (JSON OBJECT)
      */
     @GetMapping(value = "/handle", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DeferredResult<ResponseEntity<JsonObject>> handle(@Nonnull @RequestParam String id) {
+    public DeferredResult<ResponseEntity<JsonObject>> handle(@Nonnull @RequestParam String id, @RequestParam boolean insert) {
         //Creates deferred result.
         DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
         //Handles task.
-        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.handle(id), HttpStatus.OK)));
+        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.handle(id, insert), HttpStatus.OK)));
         //Returns response entity.
         return result;
     }

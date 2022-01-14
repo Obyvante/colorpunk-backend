@@ -3,21 +3,21 @@ package com.barden.bravo.player;
 import com.barden.bravo.player.currency.PlayerCurrencies;
 import com.barden.bravo.player.inventory.PlayerInventory;
 import com.barden.bravo.player.stats.PlayerStats;
-import com.barden.library.database.DatabaseRepository;
-import com.barden.library.metadata.MetadataEntity;
-import com.barden.library.scheduler.SchedulerRepository;
+import com.barden.library.cache.MetadataCachedEntity;
 import com.google.gson.JsonObject;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.UpdateOptions;
-import org.bson.Document;
+import com.mongodb.client.model.Updates;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
+import org.bson.conversions.Bson;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Player class.
  */
-public final class Player extends MetadataEntity {
+public final class Player extends MetadataCachedEntity {
 
     private final long id;
     private final PlayerInventory inventory;
@@ -30,6 +30,7 @@ public final class Player extends MetadataEntity {
      * @param id Roblox user id.
      */
     public Player(long id) {
+        super(5, TimeUnit.MINUTES, action -> PlayerRepository.remove(id));
         this.id = id;
         this.inventory = new PlayerInventory(this);
         this.stats = new PlayerStats(this);
@@ -39,17 +40,18 @@ public final class Player extends MetadataEntity {
     /**
      * Creates player object.
      *
-     * @param id Roblox user id.
+     * @param id           Roblox user id.
+     * @param bsonDocument Bson document. (FROM MONGO)
      */
-    public Player(long id, @Nonnull Document document) {
+    public Player(long id, @Nonnull BsonDocument bsonDocument) {
+        super(5, TimeUnit.MINUTES, action -> PlayerRepository.remove(id));
         //Objects null check.
-        Objects.requireNonNull(document, "document cannot be null!");
+        Objects.requireNonNull(bsonDocument, "player bson document cannot be null!");
 
         this.id = id;
-        this.inventory = new PlayerInventory(this, document.get("inventory", Document.class));
-        this.stats = new PlayerStats(this);
-        //this.stats = new PlayerStats(this, document.get("stats", Document.class));
-        this.currencies = new PlayerCurrencies(this, document.get("currencies", Document.class));
+        this.inventory = new PlayerInventory(this, bsonDocument.getDocument("inventory"));
+        this.stats = new PlayerStats(this, bsonDocument.getDocument("stats"));
+        this.currencies = new PlayerCurrencies(this, bsonDocument.getDocument("currencies"));
     }
 
     /**
@@ -109,6 +111,7 @@ public final class Player extends MetadataEntity {
         //Configures fields.
         json_object.addProperty("id", this.id);
         json_object.add("inventory", this.inventory.toJsonObject());
+        json_object.add("stats", this.stats.toJsonObject());
         json_object.add("currencies", this.currencies.toJsonObject());
 
         //Returns created json object.
@@ -116,55 +119,23 @@ public final class Player extends MetadataEntity {
     }
 
     /**
-     * Converts player object to document. (MONGO BSON)
+     * Converts player object to bson document.
      *
-     * @return Player document.
+     * @return Player bson document.
      */
     @Nonnull
-    public Document toDocument() {
-        //Creates empty document.
-        Document document = new Document();
+    public BsonDocument toBsonDocument() {
+        //Creates empty bson document.
+        BsonDocument bson_document = new BsonDocument();
 
         //Sets base fields.
-        document.put("id", this.id);
-        document.put("inventory", this.inventory.toDocument());
-        document.put("currencies", this.currencies.toDocument());
+        bson_document.put("id", new BsonInt64(this.id));
+        bson_document.put("inventory", this.inventory.toBsonDocument());
+        bson_document.put("stats", this.stats.toBsonDocument());
+        bson_document.put("currencies", this.currencies.toBsonDocument());
 
-        //Returns created document.
-        return document;
-    }
-
-
-    /*
-    DATABASE
-     */
-
-    /**
-     * Saves player to the database.
-     */
-    public void save() {
-        //If player is already exist in repository, no need to continue.
-        if (PlayerRepository.find(this.id).isPresent())
-            return;
-
-        //Handles database saving in a task.
-        SchedulerRepository.schedule(task -> {
-            //Gets mongo collection.
-            MongoCollection<Document> collection = DatabaseRepository.mongo().getCollection("bravo", "players");
-            //If collection is null, no need to continue.
-            if (collection == null)
-                return;
-
-            //Declare base variables
-            Document user_id = new Document("id", this.id);
-
-            //If player is already created, no need to continue.
-            if (collection.find(user_id).limit(1).cursor().hasNext())
-                return;
-
-            //Saves/updates to the database.
-            collection.updateOne(user_id, new Document("$set", this.toDocument()), new UpdateOptions().upsert(true));
-        });
+        //Returns created bson document.
+        return bson_document;
     }
 
 
@@ -182,7 +153,40 @@ public final class Player extends MetadataEntity {
         Objects.requireNonNull(json_object, "player json object cannot be null!");
 
         //Handles updates.
-        this.currencies.update(json_object.getAsJsonObject("currencies"));
         this.inventory.update(json_object.getAsJsonObject("inventory"));
+        this.stats.update(json_object.getAsJsonObject("stats"));
+        this.currencies.update(json_object.getAsJsonObject("currencies"));
+
+        //Resets cache time.
+        this.resetCacheTime();
+    }
+
+
+    /*
+    DATABASE
+     */
+
+    /**
+     * Gets player object's query field.
+     *
+     * @return Bson. (MONGO)
+     */
+    @Nonnull
+    public Bson toQueryBson() {
+        return new BsonDocument("id", new BsonInt64(this.id));
+    }
+
+    /**
+     * Gets player object as update bson.
+     * With update bson, we can update mongo player document.
+     *
+     * @return Bson. (MONGO)
+     */
+    @Nonnull
+    public Bson toUpdateBson() {
+        return Updates.combine(
+                Updates.set("inventory", this.inventory.toBsonDocument()),
+                Updates.set("stats", this.stats.toBsonDocument()),
+                Updates.set("currencies", this.currencies.toBsonDocument()));
     }
 }

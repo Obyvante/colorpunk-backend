@@ -1,11 +1,13 @@
 package com.barden.bravo.player.inventory.pet;
 
-import com.barden.bravo.pet.Pet;
-import com.barden.bravo.pet.PetRepository;
+import com.barden.bravo.cosmetics.pet.Pet;
+import com.barden.bravo.cosmetics.pet.PetRepository;
 import com.barden.bravo.player.Player;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.gson.JsonObject;
-import org.bson.Document;
+import org.bson.BsonBoolean;
+import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -21,28 +23,31 @@ public final class PlayerPet extends MetadataEntity {
 
     private final int id;
     private final UUID uid;
+    private boolean active;
 
     /**
      * Creates player pet object.
      *
      * @param player    Player.
-     * @param inventory Player inventory.
+     * @param inventory Player pet inventory.
      * @param id        Pet id.
-     * @param uid       Pet unique id.
+     * @param uid       Player pet unique id.
+     * @param active    Player pet active status.
      */
-    public PlayerPet(@Nonnull Player player, @Nonnull PlayerPetInventory inventory, int id, @Nonnull UUID uid) {
+    public PlayerPet(@Nonnull Player player, @Nonnull PlayerPetInventory inventory, int id, @Nonnull UUID uid, boolean active) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
         this.inventory = Objects.requireNonNull(inventory, "player pet inventory cannot be null!");
         this.id = id;
         this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
+        this.active = active;
     }
 
     /**
      * Creates player pet object from json object.
      *
      * @param player      Player.
-     * @param inventory   Player inventory.
-     * @param uid         Pet unique id.
+     * @param inventory   Player pet inventory.
+     * @param uid         Player Pet unique id.
      * @param json_object Player pet json object.
      */
     public PlayerPet(@Nonnull Player player, @Nonnull PlayerPetInventory inventory, @Nonnull UUID uid, @Nonnull JsonObject json_object) {
@@ -50,6 +55,7 @@ public final class PlayerPet extends MetadataEntity {
         this.inventory = Objects.requireNonNull(inventory, "player pet inventory cannot be null!");
         this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
         this.id = json_object.get("id").getAsInt();
+        this.active = json_object.get("active").getAsBoolean();
     }
 
     /**
@@ -107,7 +113,7 @@ public final class PlayerPet extends MetadataEntity {
      * @return If player pet is active or not.
      */
     public boolean isActive() {
-        return this.inventory.getActives().contains(this.uid);
+        return this.active;
     }
 
     /**
@@ -116,19 +122,23 @@ public final class PlayerPet extends MetadataEntity {
      * @param status Player pet status. (TRUE = active, FALSE = inactive)
      */
     public void setActive(boolean status) {
-        if (status) {
-            //If it is already active, no need to continue.
-            if (this.isActive())
-                return;
-            //Adds "this" to the active player pets list.
-            this.inventory.addActive(this);
-        } else {
-            //If it is already inactive, no need to continue.
-            if (!this.isActive())
-                return;
-            //Removes "this" from the active player pets list.
-            this.inventory.removeActive(this);
-        }
+        //If player pet is already in same status, no need to continue.
+        if (this.active == status)
+            return;
+
+        //Changes player pet status.
+        this.active = status;
+        //Updates active status of player pet for inventory.
+        this.inventory.updateActive(this);
+    }
+
+    /**
+     * Checks if player pet is exist or not.
+     *
+     * @return If player pet is exist or not.
+     */
+    public boolean isExist() {
+        return this.inventory.find(this.uid).isPresent();
     }
 
     /**
@@ -155,26 +165,28 @@ public final class PlayerPet extends MetadataEntity {
 
         //Configures fields.
         json_object.addProperty("id", this.id);
+        json_object.addProperty("active", this.active);
 
         //Returns created json object.
         return json_object;
     }
 
     /**
-     * Converts player pet object to document. (MONGO BSON)
+     * Converts player pet object to bson document.
      *
-     * @return Player pet document.
+     * @return Player pet bson document. (BSON)
      */
     @Nonnull
-    public Document toDocument() {
-        //Creates empty document.
-        Document document = new Document();
+    public BsonDocument toBsonDocument() {
+        //Creates empty bson document.
+        BsonDocument bson_document = new BsonDocument();
 
         //Sets base fields.
-        document.put("id", this.id);
+        bson_document.put("id", new BsonInt32(this.id));
+        bson_document.put("active", new BsonBoolean(this.active));
 
-        //Returns created document.
-        return document;
+        //Returns created bson document.
+        return bson_document;
     }
 
 
@@ -191,6 +203,7 @@ public final class PlayerPet extends MetadataEntity {
         //Objects null check.
         Objects.requireNonNull(json_object, "player pet json object cannot be null!");
 
-        //Nothing for now.
+        //Updates player pet status.
+        this.setActive(json_object.get("active").getAsBoolean());
     }
 }

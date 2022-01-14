@@ -6,26 +6,24 @@
   },
   "inventory": {
     "pets": {
-      "actives": [
-        "UUID-1",
-        "UUID-2"
-      ],
       "content": {
         "UUID-1": {
-          "id": 0
+          "id": 0,
+          "active": true
         }
       }
     },
     "trails": {
-      "actives": {
-        "FOLLOW": -1,
-        "FEET": -1
-      },
-      "content": [
-        1,
-        2,
-        3
-      ]
+      "content": {
+        "UUID-1": {
+          "id": 0,
+          "active": true
+        },
+        "UUID-2": {
+          "id": 0,
+          "active": false
+        }
+      }
     }
   },
   "stats": {

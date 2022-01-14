@@ -1,9 +1,9 @@
 package com.barden.bravo.player.currency;
 
-import com.barden.bravo.currency.Currency;
 import com.barden.bravo.player.Player;
 import com.google.gson.JsonObject;
-import org.bson.Document;
+import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import java.util.Objects;
 public final class PlayerCurrencies {
 
     private final Player player;
-    private final HashMap<Currency, Integer> currencies = new HashMap<>();
+    private final HashMap<PlayerCurrencyType, Integer> currencies = new HashMap<>();
 
     /**
      * Creates player currencies object.
@@ -29,17 +29,17 @@ public final class PlayerCurrencies {
     /**
      * Creates player currencies object.
      *
-     * @param player   Player.
-     * @param document Mongo document. (STATS BSON)
+     * @param player       Player.
+     * @param bsonDocument Bson document. (Mongo)
      */
-    public PlayerCurrencies(@Nonnull Player player, @Nonnull Document document) {
+    public PlayerCurrencies(@Nonnull Player player, @Nonnull BsonDocument bsonDocument) {
         //Objects null check.
-        Objects.requireNonNull(document, "currencies document cannot be null!");
+        Objects.requireNonNull(bsonDocument, "currencies bson document cannot be null!");
 
         this.player = Objects.requireNonNull(player, "player cannot be null!");
 
-        //Declares currencies.
-        document.forEach((key, value) -> this.currencies.put(Currency.valueOf(key), (int) value));
+        //Declares currencies from declared bson document.
+        bsonDocument.forEach((key, value) -> this.currencies.put(PlayerCurrencyType.valueOf(key), value.asInt32().intValue()));
     }
 
     /**
@@ -58,29 +58,29 @@ public final class PlayerCurrencies {
      * @param type Player currency type.
      * @return Player currency value.
      */
-    public int get(@Nonnull Currency type) {
+    public int get(@Nonnull PlayerCurrencyType type) {
         return this.currencies.getOrDefault(Objects.requireNonNull(type, "type cannot be null!"), 0);
     }
 
     /**
      * Adds value to currency.
-     * NOTE: Currency value cannot be negative.
+     * NOTE: PlayerCurrencyType value cannot be negative.
      *
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
-    public void add(@Nonnull Currency type, int value) {
+    public void add(@Nonnull PlayerCurrencyType type, int value) {
         this.currencies.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(this.get(type) + value, 0));
     }
 
     /**
      * Removes value from currency.
-     * NOTE: Currency value cannot be negative.
+     * NOTE: PlayerCurrencyType value cannot be negative.
      *
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
-    public void remove(@Nonnull Currency type, int value) {
+    public void remove(@Nonnull PlayerCurrencyType type, int value) {
         this.currencies.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(this.get(type) - value, 0));
     }
 
@@ -107,20 +107,20 @@ public final class PlayerCurrencies {
     }
 
     /**
-     * Converts player currencies object to document. (MONGO BSON)
+     * Converts player currencies object to bson document.
      *
-     * @return Player currencies document.
+     * @return Player currencies bson document. (MONGO)
      */
     @Nonnull
-    public Document toDocument() {
-        //Creates empty document.
-        Document document = new Document();
+    public BsonDocument toBsonDocument() {
+        //Creates empty bson document.
+        BsonDocument bson_document = new BsonDocument();
 
         //Sets base fields.
-        this.currencies.forEach((currency, value) -> document.put(currency.name(), value));
+        this.currencies.forEach((currency, value) -> bson_document.put(currency.name(), new BsonInt32(value)));
 
-        //Returns created document.
-        return document;
+        //Returns created bson document.
+        return bson_document;
     }
 
 
@@ -138,6 +138,6 @@ public final class PlayerCurrencies {
         Objects.requireNonNull(json_object, "player currencies json object cannot be null!");
 
         //Configures currencies.
-        json_object.keySet().forEach(currency_string -> this.currencies.put(Currency.valueOf(currency_string), json_object.get(currency_string).getAsInt()));
+        json_object.keySet().forEach(currency_string -> this.currencies.put(PlayerCurrencyType.valueOf(currency_string), json_object.get(currency_string).getAsInt()));
     }
 }

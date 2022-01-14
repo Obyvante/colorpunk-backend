@@ -15,6 +15,15 @@ import java.io.IOException;
 @Component
 public final class HTTPValidation implements Filter {
 
+    /**
+     * Do HTTP filtering.
+     *
+     * @param request  Servlet Request.
+     * @param response Servlet Response.
+     * @param chain    Filter Chain.
+     * @throws IOException      Throws IO Exception.
+     * @throws ServletException Throws Servlet Exception.
+     */
     @Override
     public void doFilter(@Nonnull ServletRequest request,
                          @Nonnull ServletResponse response,

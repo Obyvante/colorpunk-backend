@@ -5,7 +5,7 @@ import com.barden.bravo.player.inventory.pet.PlayerPetInventory;
 import com.barden.bravo.player.inventory.trail.PlayerTrailInventory;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.gson.JsonObject;
-import org.bson.Document;
+import org.bson.BsonDocument;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -33,19 +33,16 @@ public final class PlayerInventory extends MetadataEntity {
     /**
      * Creates player inventory object.
      *
-     * @param player   Player.
-     * @param document Mongo document. (INVENTORY BSON)
+     * @param player       Player.
+     * @param bsonDocument Mongo bson document. (INVENTORY BSON)
      */
-    public PlayerInventory(@Nonnull Player player, @Nonnull Document document) {
+    public PlayerInventory(@Nonnull Player player, @Nonnull BsonDocument bsonDocument) {
         //Objects null check.
-        Objects.requireNonNull(document, "player inventory document cannot be null!");
+        Objects.requireNonNull(bsonDocument, "player inventory bson document cannot be null!");
 
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.petInventory = new PlayerPetInventory(this.player, this, Objects.requireNonNull(document.get("pets", Document.class), "pets document cannot be null!"));
-
-        //TODO: will add database support.
-        this.trailInventory = new PlayerTrailInventory(this.player, this);
-        //this.trailInventory = new PlayerTrailInventory(this.player, this, Objects.requireNonNull(document.get("trails", Document.class), "trails document cannot be null!"));
+        this.petInventory = new PlayerPetInventory(this.player, this, Objects.requireNonNull(bsonDocument.getDocument("pets"), "pets bson document cannot be null!"));
+        this.trailInventory = new PlayerTrailInventory(this.player, this, Objects.requireNonNull(bsonDocument.getDocument("trails"), "trails bson document cannot be null!"));
     }
 
     /**
@@ -93,25 +90,27 @@ public final class PlayerInventory extends MetadataEntity {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Adds player pet inventory json object to the created json object.
+        //Configures json properties.
         json_object.add("pets", this.petInventory.toJsonObject());
+        json_object.add("trails", this.trailInventory.toJsonObject());
 
         //Returns created json object.
         return json_object;
     }
 
     /**
-     * Converts player inventory object to document. (MONGO BSON)
+     * Converts player inventory object to bson document.
      *
-     * @return Player inventory document.
+     * @return Player inventory bson document. (MONGO)
      */
     @Nonnull
-    public Document toDocument() {
+    public BsonDocument toBsonDocument() {
         //Creates empty document.
-        Document document = new Document();
+        BsonDocument document = new BsonDocument();
 
-        //Adds player pet inventory document object to the created document.
-        document.put("pets", this.petInventory.toDocument());
+        //Configures document.
+        document.put("pets", this.petInventory.toBsonDocument());
+        document.put("trails", this.trailInventory.toBsonDocument());
 
         //Returns created document.
         return document;
@@ -131,7 +130,8 @@ public final class PlayerInventory extends MetadataEntity {
         //Objects null check.
         Objects.requireNonNull(json_object, "player inventory json object cannot be null!");
 
-        //Updates player pet inventory object.
+        //Handles inventory updates.
         this.petInventory.update(json_object.getAsJsonObject("pets"));
+        this.trailInventory.update(json_object.getAsJsonObject("trails"));
     }
 }
