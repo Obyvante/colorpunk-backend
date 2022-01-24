@@ -52,9 +52,9 @@ public final class FloorDesignConverter {
                 JsonObject color_object = new JsonObject();
 
                 int color = image.getRGB(x - 1, y - 1);
-                int red = (color & 0xff0000) >> 16;
-                int green = (color & 0xff00) >> 8;
-                int blue = color & 0xff;
+                int red = (color >> 16) & 0xff;
+                int green = (color >> 8) & 0xff;
+                int blue = (color) & 0xff;
 
                 color_object.addProperty("r", red);
                 color_object.addProperty("g", green);

@@ -159,11 +159,12 @@ public final class PlayerHTTPFunctionality {
      * then returns it.
      *
      * @param id     Roblox user id.
+     * @param name   Roblox name.
      * @param insert Should insert new player to the database if it is not exist.
      * @return Response json object.
      */
     @Nonnull
-    public static JsonObject handle(@Nonnull String id, boolean insert) {
+    public static JsonObject handle(@Nonnull String id, @Nonnull String name, boolean insert) {
         //Objects null check.
         Objects.requireNonNull(id, "roblox user id cannot be null!");
 
@@ -190,7 +191,7 @@ public final class PlayerHTTPFunctionality {
         if (success) {
             try {
                 json_object = HTTPRepository.createResponse(true);
-                json_object.add("results", PlayerRepository.handle(user_id, insert).toJsonObject()); // Player repository will handle all heavy work.
+                json_object.add("results", PlayerRepository.handle(user_id, name, insert).toJsonObject()); // Player repository will handle all heavy work.
             } catch (Exception exception) {
                 json_object = HTTPRepository.createResponse(false, Result.PLAYER_NOT_FOUND);
             }

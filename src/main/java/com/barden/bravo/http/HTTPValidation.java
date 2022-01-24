@@ -1,5 +1,6 @@
 package com.barden.bravo.http;
 
+import com.barden.bravo.ProjectBravo;
 import com.barden.bravo.settings.Settings;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +34,16 @@ public final class HTTPValidation implements Filter {
         HttpServletResponse http_response = (HttpServletResponse) response;
         String http_api_key = ((HttpServletRequest) request).getHeader("BARDEN-API-KEY");
 
+        //If project hasn't initialized yet, no need to continue.
+        if (!ProjectBravo.isInitialize()) {
+            //Configures response.
+            http_response.setStatus(401);
+            http_response.setContentType("application/json");
+            http_response.setCharacterEncoding("UTF-8");
+            http_response.getWriter().write(HTTPRepository.createResponse(false, Result.NOT_INITIALIZED).toString());
+            return;
+        }
+
         //If HTTP API key is not valid, no need to continue.
         if (http_api_key == null || !this.isValidKey(http_api_key)) {
             //Configures response.
@@ -51,7 +62,8 @@ public final class HTTPValidation implements Filter {
      * Results.
      */
     public enum Result {
-        INVALID_API_KEY
+        INVALID_API_KEY,
+        NOT_INITIALIZED
     }
 
     /**

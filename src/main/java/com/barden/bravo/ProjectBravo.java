@@ -1,9 +1,11 @@
 package com.barden.bravo;
 
 import com.barden.bravo.cosmetics.pet.PetRepository;
+import com.barden.bravo.cosmetics.trail.TrailRepository;
 import com.barden.bravo.player.PlayerRepository;
 import com.barden.bravo.settings.Settings;
-import com.barden.bravo.cosmetics.trail.TrailRepository;
+import com.barden.bravo.statistics.StatisticsRepository;
+import com.barden.bravo.leaderboard.LeaderboardRepository;
 import com.barden.library.BardenJavaLibrary;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,6 +32,17 @@ import java.util.Objects;
 })
 public class ProjectBravo {
 
+    private static boolean INITIALIZED = false;
+
+    /**
+     * Gets if server is initialized or not.
+     *
+     * @return If server is initialized or not.
+     */
+    public static boolean isInitialize() {
+        return INITIALIZED;
+    }
+
     /**
      * Runs project bravo.
      *
@@ -51,5 +64,13 @@ public class ProjectBravo {
 
         //Initializes player repository.
         PlayerRepository.initialize();
+
+        //Initializes statistics repository.
+        StatisticsRepository.initialize();
+        //Initializes leaderboard repository.
+        LeaderboardRepository.initialize();
+
+        //Changes initialized field.
+        INITIALIZED = true;
     }
 }

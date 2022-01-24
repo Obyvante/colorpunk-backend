@@ -46,5 +46,8 @@
     "auto-accept": {
       "status": true
     }
+  },
+  "statistics": {
+    "GAME_PLAYED": 0
   }
 }

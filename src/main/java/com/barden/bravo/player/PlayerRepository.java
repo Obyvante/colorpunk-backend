@@ -105,11 +105,12 @@ public final class PlayerRepository {
      * then returns it.
      *
      * @param id     Roblox user id.
+     * @param name   Roblox name.
      * @param insert Should insert new player to the database if it is not exist.
      * @return Created or existed player.
      */
     @Nonnull
-    public static Player handle(long id, boolean insert) {
+    public static Player handle(long id, @Nonnull String name, boolean insert) {
         //Gets player from the cache.
         Player player = PlayerRepository.find(id).orElse(null);
         //If it is already exist in cache, no need to continue.
@@ -136,7 +137,7 @@ public final class PlayerRepository {
             throw new IllegalStateException("player cannot be created due to database insertion.");
 
         //Creates player object.
-        player = new Player(id);
+        player = new Player(id, name);
         //Saves to the database.
         PlayerMongoProvider.save(player, false);
 

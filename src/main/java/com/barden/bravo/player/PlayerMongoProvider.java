@@ -1,5 +1,6 @@
 package com.barden.bravo.player;
 
+import com.barden.library.BardenJavaLibrary;
 import com.barden.library.database.DatabaseRepository;
 import com.barden.library.scheduler.SchedulerRepository;
 import com.mongodb.client.MongoCollection;
@@ -86,23 +87,27 @@ public final class PlayerMongoProvider {
         if (players.isEmpty())
             return;
 
-        //Gets player mongo collection.
-        MongoCollection<BsonDocument> collection = PlayerMongoProvider.getCollection();
+        try {
+            //Gets player mongo collection.
+            MongoCollection<BsonDocument> collection = PlayerMongoProvider.getCollection();
 
-        //If there is only one player, no need to continue.
-        if (players.size() == 1) {
-            //Updates player.
-            players.forEach(player -> PlayerMongoProvider.getCollection().updateOne(player.toQueryBson(), player.toUpdateBson(), new UpdateOptions()));
-            return;
+            //If there is only one player, no need to continue.
+            if (players.size() == 1) {
+                //Updates player.
+                players.forEach(player -> PlayerMongoProvider.getCollection().updateOne(player.toQueryBson(), player.toUpdateBson(), new UpdateOptions()));
+                return;
+            }
+
+            //Creates player write models list to handle bulk write/update.
+            List<WriteModel<BsonDocument>> player_write_models = new ArrayList<>();
+            //Loops through players, converts "update module" then adds to the created write models list.
+            players.forEach(player -> player_write_models.add(new UpdateOneModel<>(player.toQueryBson(), player.toUpdateBson())));
+
+            //Pass write modules to collection. (UPDATES MONGO BSON DOCUMENTS AND COLLECTION) -> NOT ASYNC!
+            collection.bulkWrite(player_write_models, new BulkWriteOptions().bypassDocumentValidation(true));
+        } catch (Exception exception) {
+            BardenJavaLibrary.getLogger().error("Couldn't update players!", exception);
         }
-
-        //Creates player write models list to handle bulk write/update.
-        List<WriteModel<BsonDocument>> player_write_models = new ArrayList<>();
-        //Loops through players, converts "update module" then adds to the created write models list.
-        players.forEach(player -> player_write_models.add(new UpdateOneModel<>(player.toQueryBson(), player.toUpdateBson())));
-
-        //Pass write modules to collection. (UPDATES MONGO BSON DOCUMENTS AND COLLECTION) -> NOT ASYNC!
-        collection.bulkWrite(player_write_models, new BulkWriteOptions().bypassDocumentValidation(true));
     }
 
     /**

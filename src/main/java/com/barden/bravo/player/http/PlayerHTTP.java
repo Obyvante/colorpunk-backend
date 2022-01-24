@@ -27,8 +27,13 @@ public class PlayerHTTP {
      * @return Response entity. (JSON OBJECT)
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JsonObject> getById(@Nonnull @RequestParam String id) {
-        return new ResponseEntity<>(PlayerHTTPFunctionality.getById(id), HttpStatus.OK);
+    public DeferredResult<ResponseEntity<JsonObject>> getById(@Nonnull @RequestParam String id) {
+        //Creates deferred result.
+        DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
+        //Handles task.
+        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.getById(id), HttpStatus.OK)));
+        //Returns response entity.
+        return result;
     }
 
     /**
@@ -38,8 +43,13 @@ public class PlayerHTTP {
      * @return Update result.
      */
     @PostMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JsonObject> updateById(@Nonnull @RequestBody JsonObject json_object) {
-        return new ResponseEntity<>(PlayerHTTPFunctionality.updateById(json_object), HttpStatus.OK);
+    public DeferredResult<ResponseEntity<JsonObject>> updateById(@Nonnull @RequestBody JsonObject json_object) {
+        //Creates deferred result.
+        DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
+        //Handles task.
+        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.updateById(json_object), HttpStatus.OK)));
+        //Returns response entity.
+        return result;
     }
 
     /**
@@ -49,8 +59,13 @@ public class PlayerHTTP {
      * @return Update result.
      */
     @PostMapping(value = "/updates", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JsonObject> update(@Nonnull @RequestBody JsonObject json_object) {
-        return new ResponseEntity<>(PlayerHTTPFunctionality.update(json_object), HttpStatus.OK);
+    public DeferredResult<ResponseEntity<JsonObject>> update(@Nonnull @RequestBody JsonObject json_object) {
+        //Creates deferred result.
+        DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
+        //Handles task.
+        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.update(json_object), HttpStatus.OK)));
+        //Returns response entity.
+        return result;
     }
 
     /**
@@ -65,15 +80,16 @@ public class PlayerHTTP {
      * then returns it.
      *
      * @param id     Roblox user id.
+     * @param name   Roblox name.
      * @param insert Should insert new player to the database if it is not exist.
      * @return Response entity. (JSON OBJECT)
      */
     @GetMapping(value = "/handle", produces = MediaType.APPLICATION_JSON_VALUE)
-    public DeferredResult<ResponseEntity<JsonObject>> handle(@Nonnull @RequestParam String id, @RequestParam boolean insert) {
+    public DeferredResult<ResponseEntity<JsonObject>> handle(@Nonnull @RequestParam String id, @Nonnull @RequestParam String name, @RequestParam boolean insert) {
         //Creates deferred result.
         DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
         //Handles task.
-        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.handle(id, insert), HttpStatus.OK)));
+        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.handle(id, name, insert), HttpStatus.OK)));
         //Returns response entity.
         return result;
     }

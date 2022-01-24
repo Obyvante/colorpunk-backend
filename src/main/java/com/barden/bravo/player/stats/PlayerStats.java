@@ -63,6 +63,17 @@ public final class PlayerStats {
     }
 
     /**
+     * Sets value to stat.
+     * NOTE: Stat value cannot be negative.
+     *
+     * @param type  Player stat type.
+     * @param value Value. (POSITIVE NUMBER)
+     */
+    public void set(@Nonnull PlayerStatType type, double value) {
+        this.stats.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(value, 0));
+    }
+
+    /**
      * Adds value to stat.
      * NOTE: Stat value cannot be negative.
      *
