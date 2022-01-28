@@ -63,6 +63,17 @@ public final class PlayerCurrencies {
     }
 
     /**
+     * Sets value to currency.
+     * NOTE: PlayerCurrencyType value cannot be negative.
+     *
+     * @param type  Player currency type.
+     * @param value Value. (POSITIVE NUMBER)
+     */
+    public void set(@Nonnull PlayerCurrencyType type, int value) {
+        this.currencies.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(value, 0));
+    }
+
+    /**
      * Adds value to currency.
      * NOTE: PlayerCurrencyType value cannot be negative.
      *

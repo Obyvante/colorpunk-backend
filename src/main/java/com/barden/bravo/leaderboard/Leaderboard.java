@@ -80,9 +80,6 @@ public final class Leaderboard {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures base fields.
-        json_object.addProperty("size", this.size);
-
         //Configures user fields.
         this.users.forEach(user -> json_object.add(String.valueOf(user.getPosition()), user.toJsonObject()));
 
