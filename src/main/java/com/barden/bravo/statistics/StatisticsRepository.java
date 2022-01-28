@@ -58,29 +58,35 @@ public final class StatisticsRepository {
 
         //Creates statistics bucket. (DAILY)
         if (provider.findBucketByName("statistics:daily").isEmpty())
-            DatabaseRepository.influx().getClient().getBucketsApi().createBucket("statistics:daily",
+            client.getBucketsApi().createBucket("statistics:daily",
                     new BucketRetentionRules().everySeconds((int) TimeUnit.DAYS.toSeconds(1)),
                     provider.getOrganizationId());
 
         //Creates flux string.
         String flux = """
                 option task = {
-                    name: "Statistics: Downsampling",
+                    name: "statistics_downsampling",
                     every: 1d,
                     offset: 0m
                 }
-                
+                                
                 """;
 
         //Adds remaining to the string.
-        flux += Flux.from("statistics_daily")
+        flux += Flux.from("statistics:daily")
                 //Since a day.
                 .range(-1L, ChronoUnit.DAYS)
                 //Aggregate window.
                 .aggregateWindow().withEvery("1d").withAggregateFunction("sum")
                 //Write to infinite bucket.
-                .to("statistics", provider.getOrganizationId(), "(r) => ({sum: r._value})")
+                .to("statistics", "", """
+                        ({"sum": r._value})
+                         """)
                 .toString();
+
+        //If task is already created, no need to continue.
+        if (provider.findTaskByName("statistics_downsampling").isPresent())
+            return;
 
         //Creates task.
         client.getTasksApi().createTask(new TaskCreateRequest()

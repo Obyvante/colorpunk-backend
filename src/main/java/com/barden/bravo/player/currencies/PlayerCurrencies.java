@@ -35,9 +35,7 @@ public final class PlayerCurrencies {
     public PlayerCurrencies(@Nonnull Player player, @Nonnull BsonDocument bsonDocument) {
         //Objects null check.
         Objects.requireNonNull(bsonDocument, "currencies bson document cannot be null!");
-
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-
         //Declares currencies from declared bson document.
         bsonDocument.forEach((key, value) -> this.currencies.put(PlayerCurrencyType.valueOf(key), value.asInt32().intValue()));
     }

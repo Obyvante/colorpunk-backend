@@ -11,8 +11,9 @@ public enum StatisticType {
     LOSE,
 
     ROBUX_SPENT,
-    GOLD_EARNED,
     DONATE,
+
+    GOLD_EARNED,
 
     ROBUX_CHEST_OPENED,
     ROBUX_EGG_OPENED,

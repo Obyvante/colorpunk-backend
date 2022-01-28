@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.6.2'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.6.3'
     implementation files('libraries/barden-java-library.jar')
 }
 

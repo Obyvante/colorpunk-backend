@@ -39,7 +39,5 @@ public class ProjectBravoTest {
 
         //Initializes barden java library.
         BardenJavaLibrary.initialize();
-
-        FloorDesignConverter.convert("A3.jpg", "C:\\Users\\Obyvante\\Desktop\\Desktop\\roblox\\B6.json");
     }
 }
