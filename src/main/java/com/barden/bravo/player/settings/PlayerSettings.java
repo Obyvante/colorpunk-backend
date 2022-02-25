@@ -1,6 +1,7 @@
 package com.barden.bravo.player.settings;
 
 import com.barden.bravo.player.Player;
+import com.barden.bravo.player.settings.type.PlayerSettingType;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 //Player settings class.
+@SuppressWarnings("unused")
 public final class PlayerSettings {
 
     private final Player player;

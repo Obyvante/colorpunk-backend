@@ -1,4 +1,4 @@
-package com.barden.bravo.leaderboard.enums;
+package com.barden.bravo.leaderboard.type;
 
 /**
  * Leaderboard types.

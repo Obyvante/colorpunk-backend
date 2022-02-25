@@ -1,8 +1,10 @@
 package com.barden.bravo.player;
 
 import com.barden.library.BardenJavaLibrary;
-import com.barden.library.database.DatabaseRepository;
-import com.barden.library.scheduler.SchedulerRepository;
+import com.barden.library.database.DatabaseProvider;
+import com.barden.library.scheduler.SchedulerProvider;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.IndexOptions;
@@ -11,27 +13,30 @@ import org.bson.BsonDocument;
 import org.bson.Document;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Player repository class.
+ * Player provider class.
  */
-public final class PlayerRepository {
+public final class PlayerProvider {
 
     /**
-     * Initializes player repository object.
+     * Initializes player provider object.
      */
     public static void initialize() {
         //Creates mongo indexes.
         createMongoIndexes();
 
         //Pushes players updated data to mongo.
-        SchedulerRepository.create().after(5, TimeUnit.MINUTES).every(1, TimeUnit.MINUTES).schedule(task -> PlayerMongoProvider.update(content));
+        SchedulerProvider.create()
+                .after(5, TimeUnit.MINUTES)
+                .every(1, TimeUnit.MINUTES)
+                .schedule(task -> PlayerMongoProvider.update(content.values()));
 
         //Logging.
-        BardenJavaLibrary.getLogger().info("Player repository is initialized successfully!");
+        BardenJavaLibrary.getLogger().info("Player provider is initialized successfully!");
     }
 
     /**
@@ -39,7 +44,7 @@ public final class PlayerRepository {
      */
     private static void createMongoIndexes() {
         //Unique indexes.
-        DatabaseRepository.mongo().createIndex(
+        DatabaseProvider.mongo().createIndex(
                 "bravo",
                 "players",
                 Indexes.ascending("id"), new IndexOptions().unique(true).background(true));
@@ -50,7 +55,7 @@ public final class PlayerRepository {
     ROOT
      */
 
-    private static final HashSet<Player> content = new HashSet<>();
+    private static final BiMap<Long, Player> content = HashBiMap.create();
 
     /**
      * Gets players.
@@ -58,8 +63,8 @@ public final class PlayerRepository {
      * @return Players.
      */
     @Nonnull
-    public static HashSet<Player> getContent() {
-        return content;
+    public static Set<Player> getContent() {
+        return content.values();
     }
 
     /**
@@ -70,7 +75,7 @@ public final class PlayerRepository {
      */
     @Nonnull
     public static Optional<Player> find(long id) {
-        return content.stream().filter(player -> player.getId() == id).findFirst();
+        return Optional.ofNullable(content.get(id));
     }
 
     /**
@@ -90,7 +95,7 @@ public final class PlayerRepository {
      * @param id Roblox user id.
      */
     public static void remove(long id) {
-        PlayerRepository.find(id).ifPresent(content::remove);
+        content.remove(id);
     }
 
     /**
@@ -112,7 +117,7 @@ public final class PlayerRepository {
     @Nonnull
     public static Player handle(long id, @Nonnull String name, boolean insert) {
         //Gets player from the cache.
-        Player player = PlayerRepository.find(id).orElse(null);
+        Player player = PlayerProvider.find(id).orElse(null);
         //If it is already exist in cache, no need to continue.
         if (player != null)
             return player;
@@ -127,7 +132,7 @@ public final class PlayerRepository {
             //Creates player object from document. (DOCUMENT -> MONGO BSON)
             player = new Player(id, player_document_cursor.next());
             //Adds created player object to the cache.
-            content.add(player);
+            content.put(player.getId(), player);
             //Returns created player object.
             return player;
         }
@@ -139,10 +144,10 @@ public final class PlayerRepository {
         //Creates player object.
         player = new Player(id, name);
         //Saves to the database.
-        PlayerMongoProvider.save(player, false);
+        player.getDatabase().save();
 
         //Adds created player object to the cache.
-        content.add(player);
+        content.put(player.getId(), player);
 
         //Returns created player object.
         return player;

@@ -1,6 +1,7 @@
-package com.barden.bravo.converter;
+package com.barden.bravo.converter.HTTP;
 
-import com.barden.bravo.http.HTTPRepository;
+import com.barden.bravo.http.HTTPResponse;
+import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.http.HTTPValidation;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
@@ -38,7 +39,7 @@ public class FloorHTTP {
     public ResponseEntity<JsonObject> get(@Nonnull @RequestBody byte[] bytes) throws Exception {
         //If byte list is empty, no need to continue.
         if (bytes.length == 0)
-            return new ResponseEntity<>(HTTPRepository.createResponse(false, Result.INVALID_FILE), HttpStatus.OK);
+            return new ResponseEntity<>(HTTPResponse.of(false, Result.INVALID_FILE), HttpStatus.OK);
 
         //Converts request to an image.
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(bytes));

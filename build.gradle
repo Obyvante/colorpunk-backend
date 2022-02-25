@@ -1,6 +1,5 @@
 plugins {
     id 'org.springframework.boot' version '2.6.2'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
 }
 
@@ -18,11 +17,12 @@ sourceSets {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web:2.6.3'
-    implementation files('libraries/barden-java-library.jar')
+    implementation 'com.barden:barden-java-library:1.0'
 }
 
 test {

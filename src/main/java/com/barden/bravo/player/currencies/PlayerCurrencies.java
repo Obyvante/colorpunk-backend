@@ -1,6 +1,7 @@
 package com.barden.bravo.player.currencies;
 
 import com.barden.bravo.player.Player;
+import com.barden.bravo.player.currencies.type.PlayerCurrencyType;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
@@ -108,7 +109,7 @@ public final class PlayerCurrencies {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures fields.
+        //Configures class fields.
         this.currencies.forEach((currency, value) -> json_object.addProperty(currency.name(), value));
 
         //Returns created json object.
@@ -145,6 +146,9 @@ public final class PlayerCurrencies {
     public void update(@Nonnull JsonObject json_object) {
         //Objects null check.
         Objects.requireNonNull(json_object, "player currencies json object cannot be null!");
+
+        //Clears all currencies.
+        this.currencies.clear();
 
         //Configures currencies.
         json_object.keySet().forEach(currency_string -> this.currencies.put(PlayerCurrencyType.valueOf(currency_string), json_object.get(currency_string).getAsInt()));

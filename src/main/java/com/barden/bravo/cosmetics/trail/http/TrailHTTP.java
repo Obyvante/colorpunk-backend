@@ -1,8 +1,8 @@
 package com.barden.bravo.cosmetics.trail.http;
 
 import com.barden.bravo.cosmetics.trail.Trail;
-import com.barden.bravo.cosmetics.trail.TrailRepository;
-import com.barden.bravo.http.HTTPRepository;
+import com.barden.bravo.cosmetics.trail.TrailProvider;
+import com.barden.bravo.http.HTTPResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Trail HTTP class.
@@ -38,7 +38,7 @@ public final class TrailHTTP {
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JsonObject> get() {
         //Gets trail.
-        HashSet<Trail> trails = TrailRepository.getContent();
+        Set<Trail> trails = TrailProvider.getContent();
 
         //Creates json object.
         JsonObject json_object = new JsonObject();
@@ -62,10 +62,10 @@ public final class TrailHTTP {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JsonObject> getById(@RequestParam int id) {
         //Gets trail field.
-        Optional<Trail> trail = TrailRepository.find(id);
+        Optional<Trail> trail = TrailProvider.find(id);
 
         //Creates json object.
-        JsonObject json_object = HTTPRepository.createResponse(trail.isPresent(), Result.PET_NOT_FOUND);
+        JsonObject json_object = HTTPResponse.of(trail.isPresent(), Result.PET_NOT_FOUND);
         //If trail is present, adds to the results.
         trail.ifPresent(value -> json_object.add("results", value.toJsonObject()));
 

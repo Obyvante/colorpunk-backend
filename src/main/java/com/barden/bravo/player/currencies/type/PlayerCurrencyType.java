@@ -1,4 +1,4 @@
-package com.barden.bravo.player.currencies;
+package com.barden.bravo.player.currencies.type;
 
 import org.springframework.lang.NonNull;
 

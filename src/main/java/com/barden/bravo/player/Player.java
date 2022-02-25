@@ -1,17 +1,14 @@
 package com.barden.bravo.player;
 
 import com.barden.bravo.player.currencies.PlayerCurrencies;
+import com.barden.bravo.player.database.PlayerDatabase;
 import com.barden.bravo.player.inventory.PlayerInventory;
 import com.barden.bravo.player.settings.PlayerSettings;
 import com.barden.bravo.player.statistics.PlayerStatistics;
 import com.barden.bravo.player.stats.PlayerStats;
 import com.barden.library.cache.MetadataCachedEntity;
 import com.google.gson.JsonObject;
-import com.mongodb.client.model.Updates;
 import org.bson.BsonDocument;
-import org.bson.BsonInt64;
-import org.bson.BsonString;
-import org.bson.conversions.Bson;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -29,6 +26,7 @@ public final class Player extends MetadataCachedEntity {
     private final PlayerStats stats;
     private final PlayerSettings settings;
     private final PlayerStatistics statistics;
+    private final PlayerDatabase database;
 
     /**
      * Creates player object.
@@ -36,7 +34,7 @@ public final class Player extends MetadataCachedEntity {
      * @param id Roblox user id.
      */
     public Player(long id, @Nonnull String name) {
-        super(15, TimeUnit.MINUTES, action -> PlayerRepository.remove(id));
+        super(15, TimeUnit.MINUTES, action -> PlayerProvider.remove(id));
         this.id = id;
         this.name = Objects.requireNonNull(name, "name cannot be null!");
         this.inventory = new PlayerInventory(this);
@@ -44,6 +42,7 @@ public final class Player extends MetadataCachedEntity {
         this.stats = new PlayerStats(this);
         this.settings = new PlayerSettings(this);
         this.statistics = new PlayerStatistics(this);
+        this.database = new PlayerDatabase(this);
     }
 
     /**
@@ -53,7 +52,7 @@ public final class Player extends MetadataCachedEntity {
      * @param bsonDocument Bson document. (FROM MONGO)
      */
     public Player(long id, @Nonnull BsonDocument bsonDocument) {
-        super(15, TimeUnit.MINUTES, action -> PlayerRepository.remove(id));
+        super(15, TimeUnit.MINUTES, action -> PlayerProvider.remove(id));
         //Objects null check.
         Objects.requireNonNull(bsonDocument, "player bson document cannot be null!");
 
@@ -64,6 +63,7 @@ public final class Player extends MetadataCachedEntity {
         this.stats = new PlayerStats(this, bsonDocument.getDocument("stats"));
         this.settings = new PlayerSettings(this, bsonDocument.getDocument("settings"));
         this.statistics = new PlayerStatistics(this, bsonDocument.getDocument("statistics"));
+        this.database = new PlayerDatabase(this);
     }
 
     /**
@@ -135,6 +135,15 @@ public final class Player extends MetadataCachedEntity {
         return this.statistics;
     }
 
+    /**
+     * Gets player database.
+     *
+     * @return Player database.
+     */
+    @Nonnull
+    public PlayerDatabase getDatabase() {
+        return this.database;
+    }
 
     /*
     CONVERTERS
@@ -150,7 +159,7 @@ public final class Player extends MetadataCachedEntity {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures fields.
+        //Configure fields.
         json_object.addProperty("id", this.id);
         json_object.addProperty("name", this.name);
         json_object.add("inventory", this.inventory.toJsonObject());
@@ -161,29 +170,6 @@ public final class Player extends MetadataCachedEntity {
 
         //Returns created json object.
         return json_object;
-    }
-
-    /**
-     * Converts player object to bson document.
-     *
-     * @return Player bson document.
-     */
-    @Nonnull
-    public BsonDocument toBsonDocument() {
-        //Creates empty bson document.
-        BsonDocument bson_document = new BsonDocument();
-
-        //Sets base fields.
-        bson_document.put("id", new BsonInt64(this.id));
-        bson_document.put("name", new BsonString(this.name));
-        bson_document.put("inventory", this.inventory.toBsonDocument());
-        bson_document.put("currencies", this.currencies.toBsonDocument());
-        bson_document.put("stats", this.stats.toBsonDocument());
-        bson_document.put("settings", this.settings.toBsonDocument());
-        bson_document.put("statistics", this.statistics.toBsonDocument());
-
-        //Returns created bson document.
-        return bson_document;
     }
 
 
@@ -210,37 +196,5 @@ public final class Player extends MetadataCachedEntity {
 
         //Resets cache time.
         this.resetCacheTime();
-    }
-
-
-    /*
-    DATABASE
-     */
-
-    /**
-     * Gets player object's query field.
-     *
-     * @return Bson. (MONGO)
-     */
-    @Nonnull
-    public Bson toQueryBson() {
-        return new BsonDocument("id", new BsonInt64(this.id));
-    }
-
-    /**
-     * Gets player object as update bson.
-     * With update bson, we can update mongo player document.
-     *
-     * @return Bson. (MONGO)
-     */
-    @Nonnull
-    public Bson toUpdateBson() {
-        return Updates.combine(
-                Updates.set("name", this.name),
-                Updates.set("inventory", this.inventory.toBsonDocument()),
-                Updates.set("currencies", this.currencies.toBsonDocument()),
-                Updates.set("stats", this.stats.toBsonDocument()),
-                Updates.set("settings", this.settings.toBsonDocument()),
-                Updates.set("statistics", this.statistics.toBsonDocument()));
     }
 }

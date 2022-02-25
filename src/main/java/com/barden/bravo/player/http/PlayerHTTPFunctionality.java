@@ -1,8 +1,8 @@
 package com.barden.bravo.player.http;
 
-import com.barden.bravo.http.HTTPRepository;
+import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.player.Player;
-import com.barden.bravo.player.PlayerRepository;
+import com.barden.bravo.player.PlayerProvider;
 import com.google.gson.JsonObject;
 
 import javax.annotation.Nonnull;
@@ -55,12 +55,12 @@ public final class PlayerHTTPFunctionality {
         //Handles success.
         if (!success) {
             //Creates json object.
-            json_object = HTTPRepository.createResponse(false, Result.INVALID_USER_ID);
+            json_object = HTTPResponse.of(false, Result.INVALID_USER_ID);
         } else {
             //Gets player field.
-            Optional<Player> player = PlayerRepository.find(user_id);
+            Optional<Player> player = PlayerProvider.find(user_id);
             //Creates json object.
-            json_object = HTTPRepository.createResponse(player.isPresent(), Result.PLAYER_NOT_FOUND_IN_CACHE);
+            json_object = HTTPResponse.of(player.isPresent(), Result.PLAYER_NOT_FOUND_IN_CACHE);
             //If player is present, adds to the results.
             player.ifPresent(value -> json_object.add("results", value.toJsonObject()));
         }
@@ -82,7 +82,7 @@ public final class PlayerHTTPFunctionality {
 
         //If json is not valid, returns not successful response entity.
         if (json_object.isJsonNull() || !json_object.has("id"))
-            return HTTPRepository.createResponse(false, Result.INVALID_JSON_OBJECT);
+            return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
 
         //Handles json exceptions.
         try {
@@ -90,18 +90,18 @@ public final class PlayerHTTPFunctionality {
             long user_id = json_object.get("id").getAsLong();
 
             //Gets player from the cache.
-            Player player = PlayerRepository.find(user_id).orElse(null);
+            Player player = PlayerProvider.find(user_id).orElse(null);
             //If player does not exist, returns not successful response entity.
             if (player == null)
-                return HTTPRepository.createResponse(false, Result.PLAYER_NOT_FOUND_IN_CACHE);
+                return HTTPResponse.of(false, Result.PLAYER_NOT_FOUND_IN_CACHE);
 
             //Updates player cache with declared json object.
             player.update(json_object);
 
             //Returns success
-            return HTTPRepository.createResponse(true);
+            return HTTPResponse.of(true);
         } catch (Exception exception) {
-            return HTTPRepository.createResponse(false, Result.INVALID_JSON_OBJECT);
+            return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
         }
     }
 
@@ -118,7 +118,7 @@ public final class PlayerHTTPFunctionality {
 
         //If json is not valid, returns not successful response entity.
         if (json_object.isJsonNull() || json_object.keySet().size() == 0)
-            return HTTPRepository.createResponse(false, Result.INVALID_JSON_OBJECT);
+            return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
 
         //Handles json exceptions.
         try {
@@ -131,7 +131,7 @@ public final class PlayerHTTPFunctionality {
                 long user_id = Long.parseLong(entry.getKey());
 
                 //Gets player from the cache.
-                Player player = PlayerRepository.find(user_id).orElse(null);
+                Player player = PlayerProvider.find(user_id).orElse(null);
                 //If player does not exist, returns not successful response entity.
                 if (player == null)
                     return;
@@ -141,9 +141,9 @@ public final class PlayerHTTPFunctionality {
             });
 
             //Returns success
-            return HTTPRepository.createResponse(true);
+            return HTTPResponse.of(true);
         } catch (Exception exception) {
-            return HTTPRepository.createResponse(false, Result.INVALID_JSON_OBJECT);
+            return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
         }
     }
 
@@ -190,13 +190,13 @@ public final class PlayerHTTPFunctionality {
         //If it is successful, adds player json object as a results.
         if (success) {
             try {
-                json_object = HTTPRepository.createResponse(true);
-                json_object.add("results", PlayerRepository.handle(user_id, name, insert).toJsonObject()); // Player repository will handle all heavy work.
+                json_object = HTTPResponse.of(true);
+                json_object.add("results", PlayerProvider.handle(user_id, name, insert).toJsonObject()); // Player provider will handle all heavy work.
             } catch (Exception exception) {
-                json_object = HTTPRepository.createResponse(false, Result.PLAYER_NOT_FOUND);
+                json_object = HTTPResponse.of(false, Result.PLAYER_NOT_FOUND);
             }
         } else {
-            json_object = HTTPRepository.createResponse(false, Result.INVALID_USER_ID);
+            json_object = HTTPResponse.of(false, Result.INVALID_USER_ID);
         }
 
         //Returns configured json object.

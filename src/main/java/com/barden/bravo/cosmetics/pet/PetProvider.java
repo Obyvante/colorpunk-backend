@@ -3,25 +3,27 @@ package com.barden.bravo.cosmetics.pet;
 import com.barden.library.BardenJavaLibrary;
 import com.barden.library.file.TomlFileLoader;
 import com.electronwill.nightconfig.core.CommentedConfig;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Pet repository class.
+ * Pet provider class.
  */
-public final class PetRepository {
+public final class PetProvider {
 
-    private static final HashSet<Pet> content = new HashSet<>();
+    private static final BiMap<Integer, Pet> content = HashBiMap.create();
 
     /**
-     * Initializes pet repository object.
+     * Initializes pet provider.
      */
     public static void initialize() {
         //If it is already initialized, no need to continue.
         if (!content.isEmpty()) {
-            BardenJavaLibrary.getLogger().error("pet repository is already initialized!");
+            BardenJavaLibrary.getLogger().error("pet provider is already initialized!");
             return;
         }
 
@@ -36,13 +38,13 @@ public final class PetRepository {
                 @Nonnull String pet_asset_id = pet_config.get("assetId");
 
                 //Checks duplicate pet.
-                if (PetRepository.find(pet_id).isPresent()) {
+                if (PetProvider.find(pet_id).isPresent()) {
                     BardenJavaLibrary.getLogger().error("[PET] -> Duplicate found! (" + pet_id + ")");
                     return;
                 }
 
                 //Creates new pet then adds to the content list.
-                content.add(new Pet(pet_id, pet_name, pet_asset_id));
+                content.put(pet_id, new Pet(pet_id, pet_name, pet_asset_id));
             });
         });
 
@@ -56,8 +58,8 @@ public final class PetRepository {
      * @return Pets.
      */
     @Nonnull
-    public static HashSet<Pet> getContent() {
-        return content;
+    public static Set<Pet> getContent() {
+        return content.values();
     }
 
     /**
@@ -68,7 +70,7 @@ public final class PetRepository {
      */
     @Nonnull
     public static Optional<Pet> find(int id) {
-        return content.stream().filter(pet -> pet.getId() == id).findFirst();
+        return Optional.ofNullable(content.get(id));
     }
 
     /**

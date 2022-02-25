@@ -1,11 +1,10 @@
 package com.barden.bravo;
 
-import com.barden.bravo.cosmetics.pet.PetRepository;
-import com.barden.bravo.cosmetics.trail.TrailRepository;
-import com.barden.bravo.player.PlayerRepository;
+import com.barden.bravo.cosmetics.pet.PetProvider;
+import com.barden.bravo.cosmetics.trail.TrailProvider;
+import com.barden.bravo.leaderboard.LeaderboardProvider;
+import com.barden.bravo.player.PlayerProvider;
 import com.barden.bravo.settings.Settings;
-import com.barden.bravo.statistics.StatisticsRepository;
-import com.barden.bravo.leaderboard.LeaderboardRepository;
 import com.barden.library.BardenJavaLibrary;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -57,18 +56,19 @@ public class ProjectBravo {
 
         //Initializes settings.
         Settings.initialize();
-        //Initializes pet repository.
-        PetRepository.initialize();
-        //Initializes trail repository.
-        TrailRepository.initialize();
+        //Initializes pet provider.
+        PetProvider.initialize();
+        //Initializes trail provider.
+        TrailProvider.initialize();
 
-        //Initializes player repository.
-        PlayerRepository.initialize();
+        //Initializes player provider.
+        PlayerProvider.initialize();
 
-        //Initializes statistics repository.
-        StatisticsRepository.initialize();
-        //Initializes leaderboard repository.
-        LeaderboardRepository.initialize();
+        //Initializes statistics provider.
+        //TODO: will enable statistics when it's ready for production.
+        //StatisticsProvider.initialize();
+        //Initializes leaderboard provider.
+        LeaderboardProvider.initialize();
 
         //Changes initialized field.
         INITIALIZED = true;

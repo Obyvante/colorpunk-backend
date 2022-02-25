@@ -1,17 +1,12 @@
 package com.barden.bravo.player.statistics;
 
 import com.barden.bravo.player.Player;
-import com.barden.bravo.statistics.enums.StatisticType;
-import com.barden.library.BardenJavaLibrary;
-import com.barden.library.database.DatabaseRepository;
+import com.barden.bravo.statistics.type.StatisticType;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -21,7 +16,7 @@ import java.util.Objects;
 public final class PlayerStatistics {
 
     private final Player player;
-    private HashMap<StatisticType, Double> statistics = new HashMap<>();
+    private final HashMap<StatisticType, Double> statistics = new HashMap<>();
 
     /**
      * Creates player statistics object.
@@ -153,8 +148,8 @@ public final class PlayerStatistics {
         //Objects null check.
         Objects.requireNonNull(json_object, "player statistics json object cannot be null!");
 
-        //Resets statistics.
-        this.statistics = new HashMap<>();
+        //Clears all statistics.
+        this.statistics.clear();
 
         //Adds statistics from json object one by one to statistics object.
         json_object.entrySet().forEach((entry) -> this.statistics.put(StatisticType.valueOf(entry.getKey()), entry.getValue().getAsDouble()));

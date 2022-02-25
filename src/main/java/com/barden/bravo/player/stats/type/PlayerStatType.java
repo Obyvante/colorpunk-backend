@@ -1,4 +1,4 @@
-package com.barden.bravo.player.stats;
+package com.barden.bravo.player.stats.type;
 
 /**
  * Player stat type.

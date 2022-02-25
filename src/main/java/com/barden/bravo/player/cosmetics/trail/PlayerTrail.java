@@ -1,7 +1,7 @@
-package com.barden.bravo.player.inventory.trail;
+package com.barden.bravo.player.cosmetics.trail;
 
 import com.barden.bravo.cosmetics.trail.Trail;
-import com.barden.bravo.cosmetics.trail.TrailRepository;
+import com.barden.bravo.cosmetics.trail.TrailProvider;
 import com.barden.bravo.player.Player;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.gson.JsonObject;
@@ -19,26 +19,22 @@ import java.util.UUID;
 public final class PlayerTrail extends MetadataEntity {
 
     private final Player player;
-    private final PlayerTrailInventory inventory;
-
-    private final int id;
     private final UUID uid;
+    private final int id;
     private boolean active;
 
     /**
      * Creates player pet object.
      *
-     * @param player    Player.
-     * @param inventory Player trail inventory.
-     * @param id        Pet id.
-     * @param uid       Player trail unique id.
-     * @param active    Player trail active status.
+     * @param player Player.
+     * @param uid    Player trail unique id
+     * @param id     Trail id.
+     * @param active Player trail active status.
      */
-    public PlayerTrail(@Nonnull Player player, @Nonnull PlayerTrailInventory inventory, int id, @Nonnull UUID uid, boolean active) {
+    public PlayerTrail(@Nonnull Player player, @Nonnull UUID uid, int id, boolean active) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.inventory = Objects.requireNonNull(inventory, "player pet inventory cannot be null!");
-        this.id = id;
         this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
+        this.id = id;
         this.active = active;
     }
 
@@ -46,13 +42,11 @@ public final class PlayerTrail extends MetadataEntity {
      * Creates player trail object from json object.
      *
      * @param player      Player.
-     * @param inventory   Player trail inventory.
      * @param uid         Player trail unique id.
      * @param json_object Player trail json object.
      */
-    public PlayerTrail(@Nonnull Player player, @Nonnull PlayerTrailInventory inventory, @Nonnull UUID uid, @Nonnull JsonObject json_object) {
+    public PlayerTrail(@Nonnull Player player, @Nonnull UUID uid, @Nonnull JsonObject json_object) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.inventory = Objects.requireNonNull(inventory, "player trail inventory cannot be null!");
         this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
         this.id = json_object.get("id").getAsInt();
         this.active = json_object.get("active").getAsBoolean();
@@ -65,7 +59,7 @@ public final class PlayerTrail extends MetadataEntity {
      */
     @Nonnull
     public Trail getTrail() {
-        return TrailRepository.get(this.id);
+        return TrailProvider.get(this.id);
     }
 
     /**
@@ -79,13 +73,13 @@ public final class PlayerTrail extends MetadataEntity {
     }
 
     /**
-     * Gets trail inventory.
+     * Gets player trail unique id.
      *
-     * @return Player trail inventory.
+     * @return Player trail unique id.
      */
     @Nonnull
-    public PlayerTrailInventory getInventory() {
-        return this.inventory;
+    public UUID getUID() {
+        return this.uid;
     }
 
     /**
@@ -95,16 +89,6 @@ public final class PlayerTrail extends MetadataEntity {
      */
     public int getId() {
         return this.id;
-    }
-
-    /**
-     * Gets UID.
-     *
-     * @return Trail unique id.
-     */
-    @Nonnull
-    public UUID getUID() {
-        return this.uid;
     }
 
     /**
@@ -128,24 +112,6 @@ public final class PlayerTrail extends MetadataEntity {
 
         //Changes player trail status.
         this.active = status;
-        //Updates active status of player trail.
-        this.inventory.updateActive(this);
-    }
-
-    /**
-     * Checks if player trail is exist or not.
-     *
-     * @return If player trail is exist or not.
-     */
-    public boolean isExist() {
-        return this.inventory.find(this.uid).isPresent();
-    }
-
-    /**
-     * Deletes player trail.
-     */
-    public void delete() {
-        this.inventory.remove(this);
     }
 
 
@@ -163,7 +129,7 @@ public final class PlayerTrail extends MetadataEntity {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures fields.
+        //Configures class fields.
         json_object.addProperty("id", this.id);
         json_object.addProperty("active", this.active);
 

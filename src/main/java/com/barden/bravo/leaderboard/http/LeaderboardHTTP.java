@@ -1,9 +1,9 @@
 package com.barden.bravo.leaderboard.http;
 
-import com.barden.bravo.http.HTTPRepository;
+import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.leaderboard.Leaderboard;
-import com.barden.bravo.leaderboard.LeaderboardRepository;
-import com.barden.bravo.leaderboard.enums.LeaderboardType;
+import com.barden.bravo.leaderboard.LeaderboardProvider;
+import com.barden.bravo.leaderboard.type.LeaderboardType;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -47,16 +47,16 @@ public class LeaderboardHTTP {
         //Handles exceptions.
         try {
             //Gets leaderboard.
-            Leaderboard leaderboard = LeaderboardRepository.get(LeaderboardType.valueOf(type));
+            Leaderboard leaderboard = LeaderboardProvider.get(LeaderboardType.valueOf(type));
 
             //Creates json object.
-            json_object = HTTPRepository.createResponse(true);
+            json_object = HTTPResponse.of(true);
             json_object.add("results", leaderboard.toJsonObject());
 
             //Returns response entity.
             return new ResponseEntity<>(json_object, HttpStatus.OK);
         } catch (Exception exception) {
-            json_object = HTTPRepository.createResponse(false, Result.INVALID_LEADERBOARD_TYPE);
+            json_object = HTTPResponse.of(false, Result.INVALID_LEADERBOARD_TYPE);
         }
 
         //Returns response entity.

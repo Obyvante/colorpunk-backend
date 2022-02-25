@@ -1,9 +1,11 @@
 package com.barden.bravo.statistics.updater;
 
+import com.barden.bravo.statistics.StatisticsProvider;
 import com.barden.library.BardenJavaLibrary;
-import com.barden.library.database.DatabaseRepository;
-import com.barden.library.scheduler.SchedulerRepository;
+import com.barden.library.database.DatabaseProvider;
+import com.barden.library.scheduler.SchedulerProvider;
 import com.google.gson.JsonObject;
+import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 
 import javax.annotation.Nonnull;
@@ -22,7 +24,7 @@ public final class StatisticsUpdater {
      * Initializes statistics updater class.
      */
     public static void initialize() {
-        SchedulerRepository.create().every(1, TimeUnit.SECONDS).schedule(task -> handle());
+        SchedulerProvider.create().every(1, TimeUnit.SECONDS).schedule(task -> handle());
     }
 
     /**
@@ -54,17 +56,21 @@ public final class StatisticsUpdater {
 
         //Handles exceptions.
         try {
+
             //Declares base fields.
             List<Point> points = new ArrayList<>();
 
             //Gets json objects.
-            @Nonnull com.google.gson.JsonObject players_json_object = json_object.getAsJsonObject("players");
-            @Nonnull com.google.gson.JsonObject overall_json_object = json_object.getAsJsonObject("overall");
+            @Nonnull JsonObject players_json_object = json_object.getAsJsonObject("players");
+            @Nonnull JsonObject overall_json_object = json_object.getAsJsonObject("overall");
 
             //Handles players statistics.
             players_json_object.entrySet().forEach((entry) -> {
                 //Declares base fields.
-                Point point = new Point("players").addField("user", entry.getKey());
+                Point point = Point
+                        .measurement("players")
+                        .time(System.currentTimeMillis(), WritePrecision.MS)
+                        .addField("user", "u_" + entry.getKey());
 
                 //Declares required fields.
                 @Nonnull JsonObject user_statistics_json_object = entry.getValue().getAsJsonObject();
@@ -77,14 +83,16 @@ public final class StatisticsUpdater {
             });
 
             //Declares base fields.
-            Point point = new Point("game");
+            Point point = Point
+                    .measurement("game")
+                    .time(System.currentTimeMillis(), WritePrecision.MS);
             //Handles overall statistics.
             overall_json_object.entrySet().forEach((entry) -> point.addField(entry.getKey(), entry.getValue().getAsDouble()));
             //Adds configured point to the list.
             points.add(point);
 
             //Writes point.
-            DatabaseRepository.influx().getWriteAPI().writePoints(points);
+            DatabaseProvider.influx().getWriteAPIBlocking().writePoints(StatisticsProvider.INDEX_DAILY, DatabaseProvider.influx().getOrganizationId(), points);
         } catch (Exception exception) {
             BardenJavaLibrary.getLogger().error("Couldn't process queue item in statistics updater!", exception);
         } finally {

@@ -1,5 +1,6 @@
 package com.barden.bravo.cosmetics.trail;
 
+import com.barden.bravo.cosmetics.trail.type.TrailType;
 import com.google.gson.JsonObject;
 
 import javax.annotation.Nonnull;
@@ -10,7 +11,7 @@ import java.util.Objects;
  */
 public final class Trail {
 
-    protected final int id;
+    private final int id;
     private final TrailType type;
     private final String name;
     private final String assetId;
@@ -79,11 +80,11 @@ public final class Trail {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures fields.
+        //Configure fields.
         json_object.addProperty("id", this.id);
         json_object.addProperty("type", this.type.name());
         json_object.addProperty("name", this.name);
-        json_object.addProperty("assetId", this.assetId);
+        json_object.addProperty("asset_id", this.assetId);
 
         //Returns created json object.
         return json_object;

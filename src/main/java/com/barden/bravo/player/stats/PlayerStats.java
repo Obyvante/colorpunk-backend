@@ -1,6 +1,7 @@
 package com.barden.bravo.player.stats;
 
 import com.barden.bravo.player.Player;
+import com.barden.bravo.player.stats.type.PlayerStatType;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
@@ -15,7 +16,7 @@ import java.util.Objects;
 public final class PlayerStats {
 
     private final Player player;
-    private HashMap<PlayerStatType, Double> stats = new HashMap<>();
+    private final HashMap<PlayerStatType, Double> stats = new HashMap<>();
 
     /**
      * Creates player stats object.
@@ -149,7 +150,7 @@ public final class PlayerStats {
         Objects.requireNonNull(json_object, "player stats json object cannot be null!");
 
         //Resets stats.
-        this.stats = new HashMap<>();
+        this.stats.clear();
 
         //Adds stats from json object one by one to stats object.
         json_object.entrySet().forEach((entry) -> this.stats.put(PlayerStatType.valueOf(entry.getKey()), entry.getValue().getAsDouble()));

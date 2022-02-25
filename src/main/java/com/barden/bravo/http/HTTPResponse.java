@@ -6,18 +6,18 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
- * HTTP repository class.
+ * HTTP Response class.
  */
-public final class HTTPRepository {
+public final class HTTPResponse {
 
     /**
      * Creates response.
      *
-     * @param success    Is success.
+     * @param success Is success or not.
      * @return Response. (JSON OBJECT)
      */
     @Nonnull
-    public static JsonObject createResponse(boolean success) {
+    public static JsonObject of(boolean success) {
         //Creates json object.
         JsonObject json_object = new JsonObject();
         //Configures json object.
@@ -29,12 +29,12 @@ public final class HTTPRepository {
     /**
      * Creates response.
      *
-     * @param success    Is success.
+     * @param success    Is success or not.
      * @param enumObject Enum.
      * @return Response. (JSON OBJECT)
      */
     @Nonnull
-    public static JsonObject createResponse(boolean success, @Nonnull Enum<?> enumObject) {
+    public static JsonObject of(boolean success, @Nonnull Enum<?> enumObject) {
         //Creates json object.
         JsonObject json_object = new JsonObject();
         //Configures json object.
@@ -45,5 +45,4 @@ public final class HTTPRepository {
         //Returns created json object.
         return json_object;
     }
-
 }

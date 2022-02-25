@@ -16,8 +16,8 @@ import java.util.Objects;
 public final class PlayerInventory extends MetadataEntity {
 
     private final Player player;
-    private final PlayerPetInventory petInventory;
-    private final PlayerTrailInventory trailInventory;
+    private final PlayerPetInventory pet;
+    private final PlayerTrailInventory trail;
 
     /**
      * Creates player inventory object.
@@ -26,8 +26,8 @@ public final class PlayerInventory extends MetadataEntity {
      */
     public PlayerInventory(@Nonnull Player player) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.petInventory = new PlayerPetInventory(this.player, this);
-        this.trailInventory = new PlayerTrailInventory(this.player, this);
+        this.pet = new PlayerPetInventory(this.player);
+        this.trail = new PlayerTrailInventory(this.player);
     }
 
     /**
@@ -41,8 +41,8 @@ public final class PlayerInventory extends MetadataEntity {
         Objects.requireNonNull(bsonDocument, "player inventory bson document cannot be null!");
 
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.petInventory = new PlayerPetInventory(this.player, this, Objects.requireNonNull(bsonDocument.getDocument("pets"), "pets bson document cannot be null!"));
-        this.trailInventory = new PlayerTrailInventory(this.player, this, Objects.requireNonNull(bsonDocument.getDocument("trails"), "trails bson document cannot be null!"));
+        this.pet = new PlayerPetInventory(this.player, Objects.requireNonNull(bsonDocument.getDocument("pets"), "pets bson document cannot be null!"));
+        this.trail = new PlayerTrailInventory(this.player, Objects.requireNonNull(bsonDocument.getDocument("trails"), "trails bson document cannot be null!"));
     }
 
     /**
@@ -62,7 +62,7 @@ public final class PlayerInventory extends MetadataEntity {
      */
     @Nonnull
     public PlayerPetInventory getPet() {
-        return this.petInventory;
+        return this.pet;
     }
 
     /**
@@ -72,7 +72,7 @@ public final class PlayerInventory extends MetadataEntity {
      */
     @Nonnull
     public PlayerTrailInventory getTrail() {
-        return this.trailInventory;
+        return this.trail;
     }
 
 
@@ -91,8 +91,8 @@ public final class PlayerInventory extends MetadataEntity {
         JsonObject json_object = new JsonObject();
 
         //Configures json properties.
-        json_object.add("pets", this.petInventory.toJsonObject());
-        json_object.add("trails", this.trailInventory.toJsonObject());
+        json_object.add("pets", this.pet.toJsonObject());
+        json_object.add("trails", this.trail.toJsonObject());
 
         //Returns created json object.
         return json_object;
@@ -109,8 +109,8 @@ public final class PlayerInventory extends MetadataEntity {
         BsonDocument document = new BsonDocument();
 
         //Configures document.
-        document.put("pets", this.petInventory.toBsonDocument());
-        document.put("trails", this.trailInventory.toBsonDocument());
+        document.put("pets", this.pet.toBsonDocument());
+        document.put("trails", this.trail.toBsonDocument());
 
         //Returns created document.
         return document;
@@ -131,7 +131,7 @@ public final class PlayerInventory extends MetadataEntity {
         Objects.requireNonNull(json_object, "player inventory json object cannot be null!");
 
         //Handles inventory updates.
-        this.petInventory.update(json_object.getAsJsonObject("pets"));
-        this.trailInventory.update(json_object.getAsJsonObject("trails"));
+        this.pet.update(json_object.getAsJsonObject("pets"));
+        this.trail.update(json_object.getAsJsonObject("trails"));
     }
 }

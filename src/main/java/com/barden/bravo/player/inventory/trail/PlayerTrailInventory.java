@@ -1,17 +1,18 @@
 package com.barden.bravo.player.inventory.trail;
 
 import com.barden.bravo.player.Player;
-import com.barden.bravo.player.inventory.PlayerInventory;
+import com.barden.bravo.player.cosmetics.trail.PlayerTrail;
 import com.barden.library.metadata.MetadataEntity;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 
 import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Player trail inventory class.
@@ -19,51 +20,42 @@ import java.util.stream.Collectors;
 public final class PlayerTrailInventory extends MetadataEntity {
 
     private final Player player;
-    private final PlayerInventory inventory;
-    private final HashSet<PlayerTrail> content = new HashSet<>();
-    private HashSet<PlayerTrail> actives = new HashSet<>();
+    private final BiMap<UUID, PlayerTrail> content = HashBiMap.create();
 
     /**
      * Creates player trail inventory object.
      *
-     * @param player    Player.
-     * @param inventory Player inventory.
+     * @param player Player.
      */
-    public PlayerTrailInventory(@Nonnull Player player, @Nonnull PlayerInventory inventory) {
+    public PlayerTrailInventory(@Nonnull Player player) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.inventory = Objects.requireNonNull(inventory, "player inventory cannot be null!");
     }
 
     /**
      * Creates player trail inventory object.
      *
-     * @param player       Player.
-     * @param inventory    Player inventory.
-     * @param bsonDocument Bson document. (MONGO)
+     * @param player   Player.
+     * @param document Bson document.
      */
-    public PlayerTrailInventory(@Nonnull Player player, @Nonnull PlayerInventory inventory, @Nonnull BsonDocument bsonDocument) {
+    public PlayerTrailInventory(@Nonnull Player player, @Nonnull BsonDocument document) {
         //Objects null check.
-        Objects.requireNonNull(bsonDocument, "player trail inventory bson document cannot be null!");
+        Objects.requireNonNull(document, "player trail inventory bson document cannot be null!");
 
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.inventory = Objects.requireNonNull(inventory, "player inventory cannot be null!");
 
         //Gets trail content.
-        @Nonnull BsonDocument trails_content = Objects.requireNonNull(bsonDocument.getDocument("content"), "player trail inventory content bson document cannot be null!");
+        @Nonnull BsonDocument trails_document = Objects.requireNonNull(document.getDocument("content"), "player trail inventory content bson document cannot be null!");
         //Loops trail bson documents.
-        trails_content.keySet().forEach(trail_uid_string -> {
+        trails_document.keySet().forEach(trail_uid_string -> {
             //Declares required fields.
-            @Nonnull BsonDocument trail_document = Objects.requireNonNull(trails_content.getDocument(trail_uid_string), "player trail bson document cannot be null!");
+            @Nonnull BsonDocument trail_document = Objects.requireNonNull(trails_document.getDocument(trail_uid_string), "player trail bson document cannot be null!");
+            @Nonnull UUID trail_uid = UUID.fromString(trail_uid_string);
             int trail_id = Objects.requireNonNull(trail_document.getInt32("id"), "trail id cannot be null!").intValue();
             boolean trail_active = trail_document.getBoolean("active").getValue();
-            @Nonnull UUID trail_uid = UUID.fromString(trail_uid_string);
 
             //Creates new player trail then adds to the trails list.
-            this.content.add(new PlayerTrail(this.player, this, trail_id, trail_uid, trail_active));
+            this.content.put(trail_uid, new PlayerTrail(this.player, trail_uid, trail_id, trail_active));
         });
-
-        //Refreshes actives.
-        this.refreshActives();
     }
 
     /**
@@ -77,48 +69,28 @@ public final class PlayerTrailInventory extends MetadataEntity {
     }
 
     /**
-     * Gets player inventory.
-     *
-     * @return Player inventory.
-     */
-    @Nonnull
-    public PlayerInventory getInventory() {
-        return this.inventory;
-    }
-
-    /**
      * Gets trails.
      *
      * @return Player trails.
      */
     @Nonnull
-    public HashSet<PlayerTrail> getContent() {
-        return this.content;
+    public Set<PlayerTrail> getContent() {
+        return this.content.values();
     }
 
     /**
-     * Gets trails.
-     *
-     * @return Player trails. (SAFE)
-     */
-    @Nonnull
-    public HashSet<PlayerTrail> getContentSafe() {
-        return new HashSet<>(this.content);
-    }
-
-    /**
-     * Finds trail. (SAFE)
+     * Finds player trail. (SAFE)
      *
      * @param uid Player trail unique id.
      * @return Optional player trail.
      */
     @Nonnull
     public Optional<PlayerTrail> find(@Nonnull UUID uid) {
-        return this.content.stream().filter(trail -> trail.getUID().equals(Objects.requireNonNull(uid, "unique id cannot be null!"))).findFirst();
+        return Optional.ofNullable(this.content.get(Objects.requireNonNull(uid)));
     }
 
     /**
-     * Gets trail. (UNSAFE)
+     * Gets player trail. (UNSAFE)
      *
      * @param uid Player trail unique id.
      * @return Player trail.
@@ -129,91 +101,28 @@ public final class PlayerTrailInventory extends MetadataEntity {
     }
 
     /**
-     * Creates new trail.
+     * Creates a trail.
      *
      * @param id Trail id.
      * @return Player trail.
      */
     @Nonnull
-    public PlayerTrail create(int id) {
-        //Creates new trail.
-        PlayerTrail trail = new PlayerTrail(this.player, this, id, UUID.randomUUID(), false);
+    public PlayerTrail add(int id) {
+        //Creates a player trail.
+        PlayerTrail player_trail = new PlayerTrail(this.player, UUID.randomUUID(), id, false);
         //Adds created trail to the trails list.
-        this.content.add(trail);
+        this.content.put(player_trail.getUID(), player_trail);
         //Returns created trail.
-        return trail;
+        return player_trail;
     }
 
     /**
-     * Adds new trail to the trails list.
+     * Removes player trail by its unique id from trails list.
      *
-     * @param trail Player trail.
+     * @param id Player trail unique id.
      */
-    public void add(@Nonnull PlayerTrail trail) {
-        //Adds trail to the trails list.
-        this.content.add(Objects.requireNonNull(trail, "player trail cannot be null!"));
-    }
-
-    /**
-     * Removes new trail to from trails list.
-     *
-     * @param player_trail Player trail.
-     */
-    public void remove(@Nonnull PlayerTrail player_trail) {
-        //Removes trail from the trails list.
-        this.content.remove(player_trail);
-        //Updates player trail for player trail storage.
-        this.updateActive(player_trail);
-    }
-
-
-    /**
-     * Gets active player trails.
-     *
-     * @return Active player trails.
-     */
-    @Nonnull
-    public HashSet<PlayerTrail> getActives() {
-        return this.actives;
-    }
-
-    /**
-     * Gets active player trails.
-     *
-     * @return Active player trails. (SAFE)
-     */
-    @Nonnull
-    public HashSet<PlayerTrail> getActivesSafe() {
-        return new HashSet<>(this.actives);
-    }
-
-    /**
-     * Updates player trail active status.
-     *
-     * @param player_trail Player trail.
-     */
-    public void updateActive(@Nonnull PlayerTrail player_trail) {
-        //Objects null check.
-        Objects.requireNonNull(player_trail, "player trail cannot be null!");
-
-        //If player trail is removed, no need to continue.
-        if (this.find(player_trail.getUID()).isEmpty()) {
-            this.actives.remove(player_trail);
-            return;
-        }
-
-        //Handles player trail path in the storage.
-        if (player_trail.isActive())
-            this.actives.add(player_trail);
-        else
-            this.actives.remove(player_trail);
-    }
-
-    /**
-     * Refreshes actives trails list.
-     */
-    public void refreshActives() {
-        this.actives = this.getContent().stream().filter(PlayerTrail::isActive).collect(Collectors.toCollection(HashSet::new));
+    public void remove(@Nonnull UUID id) {
+        this.content.remove(Objects.requireNonNull(id));
     }
 
 
@@ -232,11 +141,11 @@ public final class PlayerTrailInventory extends MetadataEntity {
         JsonObject json_object = new JsonObject();
 
         //Configures trails.
-        JsonObject trails_json_object = new JsonObject();
+        JsonObject object = new JsonObject();
         //Loops through trails and adds one by one to the created json object.
-        this.content.forEach(trail -> trails_json_object.add(trail.getUID().toString(), trail.toJsonObject()));
+        this.content.forEach((key, value) -> object.add(key.toString(), value.toJsonObject()));
         //Adds trail(s) json object to the base json object.
-        json_object.add("content", trails_json_object);
+        json_object.add("content", object);
 
         //Returns created json object.
         return json_object;
@@ -250,17 +159,17 @@ public final class PlayerTrailInventory extends MetadataEntity {
     @Nonnull
     public BsonDocument toBsonDocument() {
         //Creates empty bson document.
-        BsonDocument bson_document = new BsonDocument();
+        BsonDocument document = new BsonDocument();
 
         //Creates content bson document.
         BsonDocument content_document = new BsonDocument();
         //Loops through content and add trails one by one to the content bson document.
-        this.content.forEach(trail -> content_document.put(trail.getUID().toString(), trail.toBsonDocument()));
+        this.content.forEach((key, value) -> content_document.put(key.toString(), value.toBsonDocument()));
         //Puts content bson document to the base document.
-        bson_document.put("content", content_document);
+        document.put("content", content_document);
 
         //Returns created bson document.
-        return bson_document;
+        return document;
     }
 
 
@@ -278,23 +187,25 @@ public final class PlayerTrailInventory extends MetadataEntity {
         Objects.requireNonNull(json_object, "player trail inventory json object cannot be null!");
 
         //Gets content json object from the declared json object.
-        JsonObject content_json_object = json_object.getAsJsonObject("content");
+        JsonObject content_object = json_object.getAsJsonObject("content");
 
         //Loops through trails.
-        this.getContentSafe().forEach(trail -> {
+        this.content.forEach((key, value) -> {
             //Handles existing trails.
-            if (content_json_object.keySet().contains(trail.getUID().toString()))
-                trail.update(content_json_object.getAsJsonObject(trail.getUID().toString())); //If trail is exist in the content json object.
+            if (content_object.keySet().contains(key.toString()))
+                value.update(content_object.getAsJsonObject(key.toString())); //If trail is exist in the content json object.
             else
-                trail.delete(); //Deletes trail since it is no longer in the inventory.
+                this.remove(key);
         });
 
         //Handles new trails.
-        content_json_object.keySet().stream().filter(trail_uid_string -> this.find(UUID.fromString(trail_uid_string)).isEmpty()).forEach(trail_uid_string -> {
-            //Declares trail uid.
-            @Nonnull UUID trail_uid = UUID.fromString(trail_uid_string);
-            //Creates new player trail object then adds to the content list.
-            this.content.add(new PlayerTrail(this.player, this, trail_uid, content_json_object.getAsJsonObject(trail_uid_string)));
-        });
+        content_object.keySet()
+                .stream()
+                .filter(trail_uid_string -> this.find(UUID.fromString(trail_uid_string)).isEmpty()).forEach(trail_uid_string -> {
+                    //Declares trail uid.
+                    @Nonnull UUID trail_uid = UUID.fromString(trail_uid_string);
+                    //Creates new player trail object then adds to the content list.
+                    this.content.put(trail_uid, new PlayerTrail(this.player, trail_uid, content_object.getAsJsonObject(trail_uid_string)));
+                });
     }
 }

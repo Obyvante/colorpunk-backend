@@ -1,6 +1,6 @@
 package com.barden.bravo.player.http;
 
-import com.barden.library.scheduler.SchedulerRepository;
+import com.barden.library.scheduler.SchedulerProvider;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +31,7 @@ public class PlayerHTTP {
         //Creates deferred result.
         DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
         //Handles task.
-        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.getById(id), HttpStatus.OK)));
+        SchedulerProvider.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.getById(id), HttpStatus.OK)));
         //Returns response entity.
         return result;
     }
@@ -47,7 +47,7 @@ public class PlayerHTTP {
         //Creates deferred result.
         DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
         //Handles task.
-        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.updateById(json_object), HttpStatus.OK)));
+        SchedulerProvider.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.updateById(json_object), HttpStatus.OK)));
         //Returns response entity.
         return result;
     }
@@ -63,7 +63,7 @@ public class PlayerHTTP {
         //Creates deferred result.
         DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
         //Handles task.
-        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.update(json_object), HttpStatus.OK)));
+        SchedulerProvider.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.update(json_object), HttpStatus.OK)));
         //Returns response entity.
         return result;
     }
@@ -89,7 +89,7 @@ public class PlayerHTTP {
         //Creates deferred result.
         DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
         //Handles task.
-        SchedulerRepository.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.handle(id, name, insert), HttpStatus.OK)));
+        SchedulerProvider.schedule(task -> result.setResult(new ResponseEntity<>(PlayerHTTPFunctionality.handle(id, name, insert), HttpStatus.OK)));
         //Returns response entity.
         return result;
     }

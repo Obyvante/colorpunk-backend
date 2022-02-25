@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Bravo endpoint class.
+ * HTTP Endpoint class.
  */
 @RestController
-public class BravoEndpoint {
+public class HTTPEndpoint {
 
     /**
      * Handles endpoint request.
@@ -19,7 +19,7 @@ public class BravoEndpoint {
      */
     @GetMapping
     public ResponseEntity<JsonObject> handle() {
-        return new ResponseEntity<>(HTTPRepository.createResponse(false), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HTTPResponse.of(false), HttpStatus.NOT_FOUND);
     }
 
 }

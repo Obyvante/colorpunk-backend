@@ -1,4 +1,4 @@
-package com.barden.bravo.statistics.enums;
+package com.barden.bravo.statistics.type;
 
 /**
  * Statistics.

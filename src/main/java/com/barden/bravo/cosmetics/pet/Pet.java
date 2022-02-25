@@ -66,10 +66,10 @@ public final class Pet {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures fields.
+        //Configure fields.
         json_object.addProperty("id", this.id);
         json_object.addProperty("name", this.name);
-        json_object.addProperty("assetId", this.assetId);
+        json_object.addProperty("asset_id", this.assetId);
 
         //Returns created json object.
         return json_object;

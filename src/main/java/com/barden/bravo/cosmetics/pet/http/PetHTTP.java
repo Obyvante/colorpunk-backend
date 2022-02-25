@@ -1,8 +1,8 @@
 package com.barden.bravo.cosmetics.pet.http;
 
 import com.barden.bravo.cosmetics.pet.Pet;
-import com.barden.bravo.cosmetics.pet.PetRepository;
-import com.barden.bravo.http.HTTPRepository;
+import com.barden.bravo.cosmetics.pet.PetProvider;
+import com.barden.bravo.http.HTTPResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Pet HTTP class.
@@ -38,7 +38,7 @@ public class PetHTTP {
     @GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JsonObject> get() {
         //Gets pet.
-        HashSet<Pet> pets = PetRepository.getContent();
+        Set<Pet> pets = PetProvider.getContent();
 
         //Creates json object.
         JsonObject json_object = new JsonObject();
@@ -62,10 +62,10 @@ public class PetHTTP {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<JsonObject> getById(@RequestParam int id) {
         //Gets pet field.
-        Optional<Pet> pet = PetRepository.find(id);
+        Optional<Pet> pet = PetProvider.find(id);
 
         //Creates json object.
-        JsonObject json_object = HTTPRepository.createResponse(pet.isPresent(), Result.PET_NOT_FOUND);
+        JsonObject json_object = HTTPResponse.of(pet.isPresent(), Result.PET_NOT_FOUND);
         //If pet is present, adds to the results.
         pet.ifPresent(value -> json_object.add("results", value.toJsonObject()));
 

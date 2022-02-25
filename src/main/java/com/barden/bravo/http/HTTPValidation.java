@@ -40,7 +40,7 @@ public final class HTTPValidation implements Filter {
             http_response.setStatus(401);
             http_response.setContentType("application/json");
             http_response.setCharacterEncoding("UTF-8");
-            http_response.getWriter().write(HTTPRepository.createResponse(false, Result.NOT_INITIALIZED).toString());
+            http_response.getWriter().write(HTTPResponse.of(false, Result.NOT_INITIALIZED).toString());
             return;
         }
 
@@ -50,7 +50,7 @@ public final class HTTPValidation implements Filter {
             http_response.setStatus(401);
             http_response.setContentType("application/json");
             http_response.setCharacterEncoding("UTF-8");
-            http_response.getWriter().write(HTTPRepository.createResponse(false, Result.INVALID_API_KEY).toString());
+            http_response.getWriter().write(HTTPResponse.of(false, Result.INVALID_API_KEY).toString());
             return;
         }
 

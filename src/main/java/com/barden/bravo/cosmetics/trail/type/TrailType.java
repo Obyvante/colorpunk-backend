@@ -1,4 +1,4 @@
-package com.barden.bravo.cosmetics.trail;
+package com.barden.bravo.cosmetics.trail.type;
 
 /**
  * Trail types.

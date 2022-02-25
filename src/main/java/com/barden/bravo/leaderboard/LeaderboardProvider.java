@@ -1,44 +1,47 @@
 package com.barden.bravo.leaderboard;
 
-import com.barden.bravo.leaderboard.enums.LeaderboardType;
+import com.barden.bravo.leaderboard.type.LeaderboardType;
 import com.barden.bravo.player.Player;
-import com.barden.bravo.player.PlayerRepository;
+import com.barden.bravo.player.PlayerProvider;
 import com.barden.bravo.player.statistics.PlayerStatistics;
-import com.barden.bravo.statistics.enums.StatisticType;
+import com.barden.bravo.statistics.type.StatisticType;
 import com.barden.library.BardenJavaLibrary;
-import com.barden.library.database.DatabaseRepository;
-import com.barden.library.scheduler.SchedulerRepository;
+import com.barden.library.database.DatabaseProvider;
+import com.barden.library.scheduler.SchedulerProvider;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Leaderboard repository class.
+ * Leaderboard provider class.
  */
-public final class LeaderboardRepository {
+//TODO: will inspect.
+public final class LeaderboardProvider {
 
-    private static final Collection<Leaderboard> leaderboards = new ArrayList<>();
+    private static final BiMap<LeaderboardType, Leaderboard> content = HashBiMap.create();
 
     /**
-     * Initializes leaderboard repository class.
+     * Initializes leaderboard provider class.
      */
     public static void initialize() {
         //Initializes leaderboards by types.
-        Arrays.stream(LeaderboardType.values()).forEach(type -> leaderboards.add(new Leaderboard(type, 100)));
+        for (LeaderboardType type : LeaderboardType.values())
+            content.put(type, new Leaderboard(type, 100));
 
         //Handles scheduler to update leaderboards.
-        SchedulerRepository.create().every(1, TimeUnit.MINUTES).schedule(task -> {
+        SchedulerProvider.create().every(1, TimeUnit.MINUTES).schedule(task -> {
             //Updates leaderboard scores.
-            LeaderboardRepository.update(PlayerRepository.getContent());
+            LeaderboardProvider.update(PlayerProvider.getContent());
 
             //Updates leaderboard.
-            leaderboards.forEach(Leaderboard::update);
+            content.values().forEach(Leaderboard::update);
         });
     }
 
@@ -50,10 +53,9 @@ public final class LeaderboardRepository {
      */
     @Nonnull
     public static Leaderboard get(@Nonnull LeaderboardType type) {
-        return leaderboards.stream()
-                .filter(leaderboard -> leaderboard.getType() == Objects.requireNonNull(type, "type cannot be null!"))
-                .findFirst()
-                .orElseThrow(() -> new NullPointerException("leaderboard(" + type.name() + ") cannot be null!"));
+        //Object null checks.
+        Objects.requireNonNull(type, "type cannot be null!");
+        return Objects.requireNonNull(content.get(type), "leaderboard(" + type.name() + ") cannot be null!");
     }
 
 
@@ -62,7 +64,7 @@ public final class LeaderboardRepository {
      *
      * @param players Players.
      */
-    public static void update(@Nonnull Collection<Player> players) {
+    public static void update(@Nonnull Set<Player> players) {
         //Objects null check.
         Objects.requireNonNull(players, "players cannot be null!");
 
@@ -71,7 +73,7 @@ public final class LeaderboardRepository {
             return;
 
         //Handles database update. (REDIS) [LEADERBOARD]
-        try (Jedis resource = DatabaseRepository.redis().getClient().getResource()) {
+        try (Jedis resource = DatabaseProvider.redis().getClient().getResource()) {
             //Creates pipeline.
             Pipeline pipeline = resource.pipelined();
 

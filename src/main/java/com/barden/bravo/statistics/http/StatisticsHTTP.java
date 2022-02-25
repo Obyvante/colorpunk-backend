@@ -1,6 +1,6 @@
 package com.barden.bravo.statistics.http;
 
-import com.barden.bravo.http.HTTPRepository;
+import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.statistics.updater.StatisticsUpdater;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
@@ -41,12 +41,12 @@ public class StatisticsHTTP {
 
         //If json is not valid, returns not successful response entity.
         if (json_object.isJsonNull() || json_object.keySet().size() == 0)
-            return new ResponseEntity<>(HTTPRepository.createResponse(false, Result.INVALID_JSON_OBJECT), HttpStatus.OK);
+            return new ResponseEntity<>(HTTPResponse.of(false, Result.INVALID_JSON_OBJECT), HttpStatus.OK);
 
         //Adds json object to the statistics queue.
         StatisticsUpdater.addQueue(json_object);
 
         //Returns response entity.
-        return new ResponseEntity<>(HTTPRepository.createResponse(true), HttpStatus.OK);
+        return new ResponseEntity<>(HTTPResponse.of(true), HttpStatus.OK);
     }
 }

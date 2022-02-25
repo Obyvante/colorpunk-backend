@@ -1,9 +1,9 @@
 package com.barden.bravo.leaderboard;
 
-import com.barden.bravo.leaderboard.enums.LeaderboardType;
+import com.barden.bravo.leaderboard.type.LeaderboardType;
 import com.barden.bravo.leaderboard.user.LeaderboardUser;
 import com.barden.library.BardenJavaLibrary;
-import com.barden.library.database.DatabaseRepository;
+import com.barden.library.database.DatabaseProvider;
 import com.google.gson.JsonObject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.resps.Tuple;
@@ -100,7 +100,7 @@ public final class Leaderboard {
         this.users = new ArrayList<>();
 
         //Handles redis exception.
-        try (Jedis resource = DatabaseRepository.redis().getClient().getResource()) {
+        try (Jedis resource = DatabaseProvider.redis().getClient().getResource()) {
             //Gets leaderboard.
             List<Tuple> tuples = resource.zrevrangeWithScores("leaderboard:" + this.type.name(), 0, this.size - 1);
 

@@ -1,4 +1,4 @@
-package com.barden.bravo.player.settings;
+package com.barden.bravo.player.settings.type;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;

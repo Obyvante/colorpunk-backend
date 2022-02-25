@@ -1,7 +1,7 @@
-package com.barden.bravo.player.inventory.pet;
+package com.barden.bravo.player.cosmetics.pet;
 
 import com.barden.bravo.cosmetics.pet.Pet;
-import com.barden.bravo.cosmetics.pet.PetRepository;
+import com.barden.bravo.cosmetics.pet.PetProvider;
 import com.barden.bravo.player.Player;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.gson.JsonObject;
@@ -19,26 +19,22 @@ import java.util.UUID;
 public final class PlayerPet extends MetadataEntity {
 
     private final Player player;
-    private final PlayerPetInventory inventory;
-
-    private final int id;
     private final UUID uid;
+    private final int id;
     private boolean active;
 
     /**
      * Creates player pet object.
      *
-     * @param player    Player.
-     * @param inventory Player pet inventory.
-     * @param id        Pet id.
-     * @param uid       Player pet unique id.
-     * @param active    Player pet active status.
+     * @param player Player.
+     * @param uid    Player pet unique id.
+     * @param id     Pet id.
+     * @param active Player pet active status.
      */
-    public PlayerPet(@Nonnull Player player, @Nonnull PlayerPetInventory inventory, int id, @Nonnull UUID uid, boolean active) {
+    public PlayerPet(@Nonnull Player player, @Nonnull UUID uid, int id, boolean active) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.inventory = Objects.requireNonNull(inventory, "player pet inventory cannot be null!");
-        this.id = id;
         this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
+        this.id = id;
         this.active = active;
     }
 
@@ -46,13 +42,11 @@ public final class PlayerPet extends MetadataEntity {
      * Creates player pet object from json object.
      *
      * @param player      Player.
-     * @param inventory   Player pet inventory.
      * @param uid         Player Pet unique id.
      * @param json_object Player pet json object.
      */
-    public PlayerPet(@Nonnull Player player, @Nonnull PlayerPetInventory inventory, @Nonnull UUID uid, @Nonnull JsonObject json_object) {
+    public PlayerPet(@Nonnull Player player, @Nonnull UUID uid, @Nonnull JsonObject json_object) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.inventory = Objects.requireNonNull(inventory, "player pet inventory cannot be null!");
         this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
         this.id = json_object.get("id").getAsInt();
         this.active = json_object.get("active").getAsBoolean();
@@ -65,7 +59,7 @@ public final class PlayerPet extends MetadataEntity {
      */
     @Nonnull
     public Pet getPet() {
-        return PetRepository.get(this.id);
+        return PetProvider.get(this.id);
     }
 
     /**
@@ -76,16 +70,6 @@ public final class PlayerPet extends MetadataEntity {
     @Nonnull
     public Player getPlayer() {
         return this.player;
-    }
-
-    /**
-     * Gets pet inventory.
-     *
-     * @return Player pet inventory.
-     */
-    @Nonnull
-    public PlayerPetInventory getInventory() {
-        return this.inventory;
     }
 
     /**
@@ -125,27 +109,8 @@ public final class PlayerPet extends MetadataEntity {
         //If player pet is already in same status, no need to continue.
         if (this.active == status)
             return;
-
         //Changes player pet status.
         this.active = status;
-        //Updates active status of player pet for inventory.
-        this.inventory.updateActive(this);
-    }
-
-    /**
-     * Checks if player pet is exist or not.
-     *
-     * @return If player pet is exist or not.
-     */
-    public boolean isExist() {
-        return this.inventory.find(this.uid).isPresent();
-    }
-
-    /**
-     * Deletes player pet.
-     */
-    public void delete() {
-        this.inventory.remove(this);
     }
 
 
@@ -163,7 +128,7 @@ public final class PlayerPet extends MetadataEntity {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures fields.
+        //Configures class fields.
         json_object.addProperty("id", this.id);
         json_object.addProperty("active", this.active);
 
