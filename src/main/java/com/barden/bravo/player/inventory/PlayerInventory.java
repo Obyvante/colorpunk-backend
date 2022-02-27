@@ -20,7 +20,7 @@ public final class PlayerInventory extends MetadataEntity {
     private final PlayerTrailInventory trail;
 
     /**
-     * Creates player inventory object.
+     * Creates a player inventory.
      *
      * @param player Player.
      */
@@ -31,18 +31,18 @@ public final class PlayerInventory extends MetadataEntity {
     }
 
     /**
-     * Creates player inventory object.
+     * Creates a player inventory from a bson document.
      *
-     * @param player       Player.
-     * @param bsonDocument Mongo bson document. (INVENTORY BSON)
+     * @param player   Player.
+     * @param document Player inventory bson document.
      */
-    public PlayerInventory(@Nonnull Player player, @Nonnull BsonDocument bsonDocument) {
+    public PlayerInventory(@Nonnull Player player, @Nonnull BsonDocument document) {
         //Objects null check.
-        Objects.requireNonNull(bsonDocument, "player inventory bson document cannot be null!");
+        Objects.requireNonNull(document, "player inventory bson document cannot be null!");
 
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.pet = new PlayerPetInventory(this.player, Objects.requireNonNull(bsonDocument.getDocument("pets"), "pets bson document cannot be null!"));
-        this.trail = new PlayerTrailInventory(this.player, Objects.requireNonNull(bsonDocument.getDocument("trails"), "trails bson document cannot be null!"));
+        this.pet = new PlayerPetInventory(this.player, Objects.requireNonNull(document.getDocument("pets"), "pets bson document cannot be null!"));
+        this.trail = new PlayerTrailInventory(this.player, Objects.requireNonNull(document.getDocument("trails"), "trails bson document cannot be null!"));
     }
 
     /**
@@ -56,7 +56,7 @@ public final class PlayerInventory extends MetadataEntity {
     }
 
     /**
-     * Gets pet inventory.
+     * Gets player pet inventory.
      *
      * @return Player pet inventory.
      */
@@ -66,7 +66,7 @@ public final class PlayerInventory extends MetadataEntity {
     }
 
     /**
-     * Gets trail inventory.
+     * Gets player trail inventory.
      *
      * @return Player trial inventory.
      */
@@ -81,38 +81,28 @@ public final class PlayerInventory extends MetadataEntity {
      */
 
     /**
-     * Gets player inventory as a json object.
+     * Converts player inventory to a json object.
      *
-     * @return Player inventory object as a json object.
+     * @return Player inventory json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
-        //Creates json object.
-        JsonObject json_object = new JsonObject();
-
-        //Configures json properties.
-        json_object.add("pets", this.pet.toJsonObject());
-        json_object.add("trails", this.trail.toJsonObject());
-
-        //Returns created json object.
-        return json_object;
+        JsonObject json = new JsonObject();
+        json.add("pets", this.pet.toJsonObject());
+        json.add("trails", this.trail.toJsonObject());
+        return json;
     }
 
     /**
-     * Converts player inventory object to bson document.
+     * Converts player inventory to a bson document.
      *
-     * @return Player inventory bson document. (MONGO)
+     * @return Player inventory bson document.
      */
     @Nonnull
     public BsonDocument toBsonDocument() {
-        //Creates empty document.
         BsonDocument document = new BsonDocument();
-
-        //Configures document.
         document.put("pets", this.pet.toBsonDocument());
         document.put("trails", this.trail.toBsonDocument());
-
-        //Returns created document.
         return document;
     }
 
@@ -122,16 +112,15 @@ public final class PlayerInventory extends MetadataEntity {
      */
 
     /**
-     * Updates player inventory object.
+     * Updates player inventory.
      *
-     * @param json_object Json object.
+     * @param json Player inventory json object.
      */
-    public void update(@Nonnull JsonObject json_object) {
+    public void update(@Nonnull JsonObject json) {
         //Objects null check.
-        Objects.requireNonNull(json_object, "player inventory json object cannot be null!");
+        Objects.requireNonNull(json, "player inventory json object cannot be null!");
 
-        //Handles inventory updates.
-        this.pet.update(json_object.getAsJsonObject("pets"));
-        this.trail.update(json_object.getAsJsonObject("trails"));
+        this.pet.update(json.getAsJsonObject("pets"));
+        this.trail.update(json.getAsJsonObject("trails"));
     }
 }

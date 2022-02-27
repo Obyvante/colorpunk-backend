@@ -33,23 +33,23 @@ public final class PlayerPet extends MetadataEntity {
      */
     public PlayerPet(@Nonnull Player player, @Nonnull UUID uid, int id, boolean active) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
+        this.uid = Objects.requireNonNull(uid, "player pet uid cannot be null!");
         this.id = id;
         this.active = active;
     }
 
     /**
-     * Creates a player pet from json object.
+     * Creates a player pet from a json object.
      *
-     * @param player      Player.
-     * @param uid         Player Pet unique id.
-     * @param json_object Player pet json object.
+     * @param player Player.
+     * @param uid    Player Pet unique id.
+     * @param json   Player pet json object.
      */
-    public PlayerPet(@Nonnull Player player, @Nonnull UUID uid, @Nonnull JsonObject json_object) {
+    public PlayerPet(@Nonnull Player player, @Nonnull UUID uid, @Nonnull JsonObject json) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
-        this.id = json_object.get("id").getAsInt();
-        this.active = json_object.get("active").getAsBoolean();
+        this.uid = Objects.requireNonNull(uid, "player pet uid cannot be null!");
+        this.id = json.get("id").getAsInt();
+        this.active = json.get("active").getAsBoolean();
     }
 
     /**
@@ -83,7 +83,7 @@ public final class PlayerPet extends MetadataEntity {
     }
 
     /**
-     * Gets id.
+     * Gets pet id.
      *
      * @return Pet id.
      */
@@ -106,10 +106,8 @@ public final class PlayerPet extends MetadataEntity {
      * @param status Player pet status. (TRUE = active, FALSE = inactive)
      */
     public void setActive(boolean status) {
-        //If player pet is already in same status, no need to continue.
         if (this.active == status)
             return;
-        //Changes player pet status.
         this.active = status;
     }
 
@@ -119,39 +117,29 @@ public final class PlayerPet extends MetadataEntity {
      */
 
     /**
-     * Gets player pet as a json object.
+     * Converts player pet to a json object.
      *
-     * @return Player pet as a json object.
+     * @return Player pet json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
-        //Creates json object.
-        JsonObject json_object = new JsonObject();
-
-        //Configures class fields.
-        json_object.addProperty("id", this.id);
-        json_object.addProperty("active", this.active);
-
-        //Returns created json object.
-        return json_object;
+        JsonObject json = new JsonObject();
+        json.addProperty("id", this.id);
+        json.addProperty("active", this.active);
+        return json;
     }
 
     /**
-     * Converts player pet to bson document.
+     * Converts player pet to a bson document.
      *
-     * @return Player pet bson document. (BSON)
+     * @return Player pet bson document.
      */
     @Nonnull
     public BsonDocument toBsonDocument() {
-        //Creates empty bson document.
-        BsonDocument bson_document = new BsonDocument();
-
-        //Sets base fields.
-        bson_document.put("id", new BsonInt32(this.id));
-        bson_document.put("active", new BsonBoolean(this.active));
-
-        //Returns created bson document.
-        return bson_document;
+        BsonDocument document = new BsonDocument();
+        document.put("id", new BsonInt32(this.id));
+        document.put("active", new BsonBoolean(this.active));
+        return document;
     }
 
 
@@ -162,13 +150,12 @@ public final class PlayerPet extends MetadataEntity {
     /**
      * Updates player pet.
      *
-     * @param json_object Json object.
+     * @param json Player pet json object.
      */
-    public void update(@Nonnull JsonObject json_object) {
+    public void update(@Nonnull JsonObject json) {
         //Objects null check.
-        Objects.requireNonNull(json_object, "player pet json object cannot be null!");
+        Objects.requireNonNull(json, "player pet json object cannot be null!");
 
-        //Updates player pet status.
-        this.setActive(json_object.get("active").getAsBoolean());
+        this.setActive(json.get("active").getAsBoolean());
     }
 }

@@ -16,10 +16,10 @@ import java.util.Objects;
 public final class PlayerStatistics {
 
     private final Player player;
-    private final HashMap<StatisticType, Double> statistics = new HashMap<>();
+    private final HashMap<StatisticType, Double> content = new HashMap<>();
 
     /**
-     * Creates player statistics object.
+     * Creates a player statistics.
      *
      * @param player Player.
      */
@@ -28,19 +28,19 @@ public final class PlayerStatistics {
     }
 
     /**
-     * Creates player statistics object.
+     * Creates a player statistics.
      *
-     * @param player       Player.
-     * @param bsonDocument Bson document. (MONGO)
+     * @param player   Player.
+     * @param document Player statistics document.
      */
-    public PlayerStatistics(@Nonnull Player player, @Nonnull BsonDocument bsonDocument) {
+    public PlayerStatistics(@Nonnull Player player, @Nonnull BsonDocument document) {
         //Objects null check.
-        Objects.requireNonNull(bsonDocument, "statistics bson document cannot be null!");
+        Objects.requireNonNull(document, "player statistics bson document cannot be null!");
 
         this.player = Objects.requireNonNull(player, "player cannot be null!");
 
         //Declares statistics from the declared bson document.
-        bsonDocument.forEach((key, value) -> this.statistics.put(StatisticType.valueOf(key), value.asDouble().getValue()));
+        document.forEach((key, value) -> this.content.put(StatisticType.valueOf(key), value.asDouble().getValue()));
     }
 
     /**
@@ -54,46 +54,49 @@ public final class PlayerStatistics {
     }
 
     /**
-     * Gets statistic value.
+     * Gets player statistic value.
      *
      * @param type Player statistic type.
-     * @return Statistic value.
+     * @return Player statistic value.
      */
     public double get(@Nonnull StatisticType type) {
-        return this.statistics.getOrDefault(Objects.requireNonNull(type, "type cannot be null!"), 0.0d);
+        return this.content.getOrDefault(Objects.requireNonNull(type, "player statistic type cannot be null!"), 0.0d);
     }
 
     /**
-     * Adds value to statistic.
-     * NOTE: Statistic value cannot be negative.
+     * Sets player statistics value.
+     * NOTE: Value cannot be negative
+     * Otherwise, it'll convert to 0.
      *
      * @param type  Player statistic type.
      * @param value Value. (POSITIVE NUMBER)
      */
     public void set(@Nonnull StatisticType type, double value) {
-        this.statistics.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(value, 0));
+        this.content.put(Objects.requireNonNull(type, "player statistic type cannot be null!"), Math.max(value, 0));
     }
 
     /**
-     * Adds value to stat.
-     * NOTE: Stat value cannot be negative.
+     * Adds value to player statistic.
+     * NOTE: Value cannot be negative
+     * Otherwise, it'll convert to 0.
      *
      * @param type  Player statistic type.
      * @param value Value. (POSITIVE NUMBER)
      */
     public void add(@Nonnull StatisticType type, double value) {
-        this.statistics.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(this.get(type) + value, 0));
+        this.content.put(Objects.requireNonNull(type, "player statistic type cannot be null!"), Math.max(this.get(type) + value, 0));
     }
 
     /**
-     * Removes value from stat.
-     * NOTE: Stat value cannot be negative.
+     * Removes value from player statistic.
+     * NOTE: Value cannot be negative
+     * Otherwise, it'll convert to 0.
      *
      * @param type  Player statistic type.
      * @param value Value. (POSITIVE NUMBER)
      */
     public void remove(@Nonnull StatisticType type, double value) {
-        this.statistics.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(this.get(type) - value, 0));
+        this.content.put(Objects.requireNonNull(type, "player statistic type cannot be null!"), Math.max(this.get(type) - value, 0));
     }
 
 
@@ -102,36 +105,27 @@ public final class PlayerStatistics {
      */
 
     /**
-     * Gets player statistics as a json object.
+     * Converts player statistics to a json object.
      *
-     * @return Statistics as a json object.
+     * @return Player statistics json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
-        //Creates json object.
-        JsonObject json_object = new JsonObject();
-
-        //Adds statistics to created empty json object.
-        this.statistics.forEach((stat, value) -> json_object.addProperty(stat.name(), value));
-
-        //Returns created json object.
-        return json_object;
+        JsonObject json = new JsonObject();
+        this.content.forEach((stat, value) -> json.addProperty(stat.name(), value));
+        return json;
     }
 
     /**
-     * Converts player statistics object to document. (MONGO BSON)
+     * Converts player statistics to a bson document.
      *
-     * @return Statistics document.
+     * @return Player statistics bson document.
      */
     @Nonnull
     public BsonDocument toBsonDocument() {
-        //Creates empty bson document.
-        BsonDocument bson_document = new BsonDocument();
-        //Adds statistics to created empty bson document.
-        this.statistics.forEach((stat, value) -> bson_document.put(stat.name(), new BsonDouble(value)));
-
-        //Returns created bson document.
-        return bson_document;
+        BsonDocument document = new BsonDocument();
+        this.content.forEach((stat, value) -> document.put(stat.name(), new BsonDouble(value)));
+        return document;
     }
 
 
@@ -140,18 +134,17 @@ public final class PlayerStatistics {
      */
 
     /**
-     * Updates player statistics object.
+     * Updates player statistics.
      *
-     * @param json_object Json object.
+     * @param json Player statistics json object.
      */
-    public void update(@Nonnull JsonObject json_object) {
+    public void update(@Nonnull JsonObject json) {
         //Objects null check.
-        Objects.requireNonNull(json_object, "player statistics json object cannot be null!");
+        Objects.requireNonNull(json, "player statistics json object cannot be null!");
 
-        //Clears all statistics.
-        this.statistics.clear();
+        //Clears all player statistics to make sure it won't have existed player statistic.
+        this.content.clear();
 
-        //Adds statistics from json object one by one to statistics object.
-        json_object.entrySet().forEach((entry) -> this.statistics.put(StatisticType.valueOf(entry.getKey()), entry.getValue().getAsDouble()));
+        json.entrySet().forEach((entry) -> this.content.put(StatisticType.valueOf(entry.getKey()), entry.getValue().getAsDouble()));
     }
 }

@@ -12,11 +12,6 @@ public enum PlayerCurrencyType {
 
     private final String name;
 
-    /**
-     * Creates currency object.
-     *
-     * @param name PlayerCurrencyType name.
-     */
     PlayerCurrencyType(@NonNull String name) {
         this.name = Objects.requireNonNull(name, "name cannot be null!");
     }

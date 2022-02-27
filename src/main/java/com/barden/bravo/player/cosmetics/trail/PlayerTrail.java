@@ -33,23 +33,23 @@ public final class PlayerTrail extends MetadataEntity {
      */
     public PlayerTrail(@Nonnull Player player, @Nonnull UUID uid, int id, boolean active) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
+        this.uid = Objects.requireNonNull(uid, "player trail uid cannot be null!");
         this.id = id;
         this.active = active;
     }
 
     /**
-     * Creates a player trail from json object.
+     * Creates a player trail from a json object.
      *
-     * @param player      Player.
-     * @param uid         Player trail unique id.
-     * @param json_object Player trail json object.
+     * @param player Player.
+     * @param uid    Player trail unique id.
+     * @param json   Player trail json object.
      */
-    public PlayerTrail(@Nonnull Player player, @Nonnull UUID uid, @Nonnull JsonObject json_object) {
+    public PlayerTrail(@Nonnull Player player, @Nonnull UUID uid, @Nonnull JsonObject json) {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        this.uid = Objects.requireNonNull(uid, "uid cannot be null!");
-        this.id = json_object.get("id").getAsInt();
-        this.active = json_object.get("active").getAsBoolean();
+        this.uid = Objects.requireNonNull(uid, "player trail uid cannot be null!");
+        this.id = json.get("id").getAsInt();
+        this.active = json.get("active").getAsBoolean();
     }
 
     /**
@@ -83,7 +83,7 @@ public final class PlayerTrail extends MetadataEntity {
     }
 
     /**
-     * Gets id.
+     * Gets trail id.
      *
      * @return Trail id.
      */
@@ -106,11 +106,8 @@ public final class PlayerTrail extends MetadataEntity {
      * @param status Player trail status. (TRUE = active, FALSE = inactive)
      */
     public void setActive(boolean status) {
-        //If player trail is already in same status, no need to continue.
         if (this.active == status)
             return;
-
-        //Changes player trail status.
         this.active = status;
     }
 
@@ -120,39 +117,29 @@ public final class PlayerTrail extends MetadataEntity {
      */
 
     /**
-     * Gets player trail as a json object.
+     * Converts player trail to a json object.
      *
-     * @return Player trail as a json object.
+     * @return Player trail json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
-        //Creates json object.
-        JsonObject json_object = new JsonObject();
-
-        //Configures class fields.
-        json_object.addProperty("id", this.id);
-        json_object.addProperty("active", this.active);
-
-        //Returns created json object.
-        return json_object;
+        JsonObject json = new JsonObject();
+        json.addProperty("id", this.id);
+        json.addProperty("active", this.active);
+        return json;
     }
 
     /**
-     * Converts player trail to bson document.
+     * Converts player trail to a bson document.
      *
-     * @return Player trail bson document. (BSON)
+     * @return Player trail bson document.
      */
     @Nonnull
     public BsonDocument toBsonDocument() {
-        //Creates empty bson document.
-        BsonDocument bson_document = new BsonDocument();
-
-        //Sets base fields.
-        bson_document.put("id", new BsonInt32(this.id));
-        bson_document.put("active", new BsonBoolean(this.active));
-
-        //Returns created bson document.
-        return bson_document;
+        BsonDocument document = new BsonDocument();
+        document.put("id", new BsonInt32(this.id));
+        document.put("active", new BsonBoolean(this.active));
+        return document;
     }
 
 
@@ -163,13 +150,12 @@ public final class PlayerTrail extends MetadataEntity {
     /**
      * Updates player trail.
      *
-     * @param json_object Json object.
+     * @param json Player trail json object.
      */
-    public void update(@Nonnull JsonObject json_object) {
+    public void update(@Nonnull JsonObject json) {
         //Objects null check.
-        Objects.requireNonNull(json_object, "player trail json object cannot be null!");
+        Objects.requireNonNull(json, "player trail json object cannot be null!");
 
-        //Updates player trail status.
-        this.setActive(json_object.get("active").getAsBoolean());
+        this.setActive(json.get("active").getAsBoolean());
     }
 }

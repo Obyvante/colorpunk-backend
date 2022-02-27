@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public final class PlayerProvider {
 
     /**
-     * Initializes player provider object.
+     * Initializes player provider.
      */
     public static void initialize() {
         //Creates mongo indexes.
@@ -68,9 +68,9 @@ public final class PlayerProvider {
     }
 
     /**
-     * Finds player. (SAFE)
+     * Finds player by its roblox user id. (SAFE)
      *
-     * @param id Roblox user id.
+     * @param id Player roblox user id.
      * @return Optional player.
      */
     @Nonnull
@@ -79,9 +79,9 @@ public final class PlayerProvider {
     }
 
     /**
-     * Gets player. (UNSAFE)
+     * Gets player by its roblox user id. (UNSAFE)
      *
-     * @param id Roblox user id.
+     * @param id Player roblox user id.
      * @return Player.
      */
     @Nonnull
@@ -90,9 +90,9 @@ public final class PlayerProvider {
     }
 
     /**
-     * Removes player object if it is existed in cache.
+     * Removes player.
      *
-     * @param id Roblox user id.
+     * @param id Player roblox user id.
      */
     public static void remove(long id) {
         content.remove(id);

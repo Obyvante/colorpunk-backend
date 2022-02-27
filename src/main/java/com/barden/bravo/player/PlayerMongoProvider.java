@@ -25,7 +25,7 @@ public final class PlayerMongoProvider {
     /**
      * Gets player mongo collection.
      *
-     * @return Mongo collection.
+     * @return Player mongo collection.
      */
     @Nonnull
     public static MongoCollection<BsonDocument> getCollection() {

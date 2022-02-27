@@ -14,6 +14,11 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * Player database class.
+ * This class is mostly for database calls and gets. It also has useful
+ * database methods/functions to make code shorter and safer.
+ */
 public final class PlayerDatabase {
 
     private final Player player;
@@ -46,11 +51,12 @@ public final class PlayerDatabase {
      * Saves player to the database.
      */
     public void save() {
-        //Gets mongo collection.
         MongoCollection<BsonDocument> collection = PlayerMongoProvider.getCollection();
+
         //If player is already created, no need to continue.
         if (collection.find(this.toQueryBson()).limit(1).cursor().hasNext())
             return;
+
         //Saves/updates to the database.
         collection.insertOne(this.toBsonDocument());
     }
@@ -73,7 +79,7 @@ public final class PlayerDatabase {
      * It'll be useful to 'query/filter' player
      * with unique identifier.
      *
-     * @return Bson.
+     * @return Query bson.
      */
     @Nonnull
     public Bson toQueryBson() {
@@ -83,15 +89,13 @@ public final class PlayerDatabase {
     /**
      * Gets player as a bson document.
      *
-     * @return Bson document.
+     * @return Player bson document.
      */
     @Nonnull
     public BsonDocument toBsonDocument() {
         BsonDocument bson_document = new BsonDocument();
-
         for (PlayerBsonField field : PlayerBsonField.values())
             bson_document.put(field.getPath(), this.toBsonValue(field));
-
         return bson_document;
     }
 
@@ -99,7 +103,7 @@ public final class PlayerDatabase {
      * Gets player as an update bson.
      * With update bson, you can update mongo player collection.
      *
-     * @return Bson.
+     * @return Player update bson.
      */
     @Nonnull
     public Bson toUpdateBson(@Nonnull PlayerBsonField... fields) {

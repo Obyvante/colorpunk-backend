@@ -16,10 +16,10 @@ import java.util.Objects;
 public final class PlayerCurrencies {
 
     private final Player player;
-    private final HashMap<PlayerCurrencyType, Integer> currencies = new HashMap<>();
+    private final HashMap<PlayerCurrencyType, Integer> content = new HashMap<>();
 
     /**
-     * Creates player currencies object.
+     * Creates a player currencies.
      *
      * @param player Player.
      */
@@ -28,17 +28,19 @@ public final class PlayerCurrencies {
     }
 
     /**
-     * Creates player currencies object.
+     * Creates a player currencies.
      *
-     * @param player       Player.
-     * @param bsonDocument Bson document. (Mongo)
+     * @param player   Player.
+     * @param document Player currencies bson document.
      */
-    public PlayerCurrencies(@Nonnull Player player, @Nonnull BsonDocument bsonDocument) {
+    public PlayerCurrencies(@Nonnull Player player, @Nonnull BsonDocument document) {
         //Objects null check.
-        Objects.requireNonNull(bsonDocument, "currencies bson document cannot be null!");
+        Objects.requireNonNull(document, "player currencies bson document cannot be null!");
+
         this.player = Objects.requireNonNull(player, "player cannot be null!");
-        //Declares currencies from declared bson document.
-        bsonDocument.forEach((key, value) -> this.currencies.put(PlayerCurrencyType.valueOf(key), value.asInt32().intValue()));
+
+        //Declares player currencies from declared bson document.
+        document.forEach((key, value) -> this.content.put(PlayerCurrencyType.valueOf(key), value.asInt32().intValue()));
     }
 
     /**
@@ -52,46 +54,49 @@ public final class PlayerCurrencies {
     }
 
     /**
-     * Gets currency value.
+     * Gets player currency value.
      *
      * @param type Player currency type.
      * @return Player currency value.
      */
     public int get(@Nonnull PlayerCurrencyType type) {
-        return this.currencies.getOrDefault(Objects.requireNonNull(type, "type cannot be null!"), 0);
+        return this.content.getOrDefault(Objects.requireNonNull(type, "player currency type cannot be null!"), 0);
     }
 
     /**
-     * Sets value to currency.
-     * NOTE: PlayerCurrencyType value cannot be negative.
+     * Sets player currency value.
+     * NOTE: Value cannot be negative
+     * Otherwise, it'll convert to 0.
      *
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
     public void set(@Nonnull PlayerCurrencyType type, int value) {
-        this.currencies.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(value, 0));
+        this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), Math.max(value, 0));
     }
 
     /**
-     * Adds value to currency.
-     * NOTE: PlayerCurrencyType value cannot be negative.
+     * Adds value to player currency.
+     * NOTE: Value cannot be negative
+     * Otherwise, it'll convert to 0.
      *
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
     public void add(@Nonnull PlayerCurrencyType type, int value) {
-        this.currencies.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(this.get(type) + value, 0));
+        this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), Math.max(this.get(type) + value, 0));
     }
 
     /**
-     * Removes value from currency.
-     * NOTE: PlayerCurrencyType value cannot be negative.
+     * Removes value from player currency.
+     * NOTE: Value cannot be negative
+     * Otherwise, it'll convert to 0.
      *
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
     public void remove(@Nonnull PlayerCurrencyType type, int value) {
-        this.currencies.put(Objects.requireNonNull(type, "type cannot be null!"), Math.max(this.get(type) - value, 0));
+        this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), Math.max(this.get(type) - value, 0));
     }
 
 
@@ -100,36 +105,26 @@ public final class PlayerCurrencies {
      */
 
     /**
-     * Gets currencies as a json object.
+     * Converts player currencies to a json object.
      *
-     * @return Player currencies as a json object.
+     * @return Player currency json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
-        //Creates json object.
         JsonObject json_object = new JsonObject();
-
-        //Configures class fields.
-        this.currencies.forEach((currency, value) -> json_object.addProperty(currency.name(), value));
-
-        //Returns created json object.
+        this.content.forEach((currency, value) -> json_object.addProperty(currency.name(), value));
         return json_object;
     }
 
     /**
-     * Converts player currencies object to bson document.
+     * Converts player currencies to a bson document.
      *
-     * @return Player currencies bson document. (MONGO)
+     * @return Player currency bson document.
      */
     @Nonnull
     public BsonDocument toBsonDocument() {
-        //Creates empty bson document.
         BsonDocument bson_document = new BsonDocument();
-
-        //Sets base fields.
-        this.currencies.forEach((currency, value) -> bson_document.put(currency.name(), new BsonInt32(value)));
-
-        //Returns created bson document.
+        this.content.forEach((currency, value) -> bson_document.put(currency.name(), new BsonInt32(value)));
         return bson_document;
     }
 
@@ -139,18 +134,17 @@ public final class PlayerCurrencies {
      */
 
     /**
-     * Updates player currencies object.
+     * Updates player currencies.
      *
-     * @param json_object Json object.
+     * @param json player currencies json object.
      */
-    public void update(@Nonnull JsonObject json_object) {
+    public void update(@Nonnull JsonObject json) {
         //Objects null check.
-        Objects.requireNonNull(json_object, "player currencies json object cannot be null!");
+        Objects.requireNonNull(json, "player currencies json object cannot be null!");
 
-        //Clears all currencies.
-        this.currencies.clear();
+        //Clears all player currencies to make sure it won't have existed player currencies.
+        this.content.clear();
 
-        //Configures currencies.
-        json_object.keySet().forEach(currency_string -> this.currencies.put(PlayerCurrencyType.valueOf(currency_string), json_object.get(currency_string).getAsInt()));
+        json.keySet().forEach(currency_string -> this.content.put(PlayerCurrencyType.valueOf(currency_string), json.get(currency_string).getAsInt()));
     }
 }

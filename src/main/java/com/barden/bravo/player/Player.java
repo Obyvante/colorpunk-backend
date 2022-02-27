@@ -29,7 +29,7 @@ public final class Player extends MetadataCachedEntity {
     private final PlayerDatabase database;
 
     /**
-     * Creates player object.
+     * Creates a player.
      *
      * @param id Roblox user id.
      */
@@ -46,39 +46,39 @@ public final class Player extends MetadataCachedEntity {
     }
 
     /**
-     * Creates player object.
+     * Creates a player from a bson document.
      *
-     * @param id           Roblox user id.
-     * @param bsonDocument Bson document. (FROM MONGO)
+     * @param id       Roblox user id.
+     * @param document Player bson document.
      */
-    public Player(long id, @Nonnull BsonDocument bsonDocument) {
+    public Player(long id, @Nonnull BsonDocument document) {
         super(15, TimeUnit.MINUTES, action -> PlayerProvider.remove(id));
         //Objects null check.
-        Objects.requireNonNull(bsonDocument, "player bson document cannot be null!");
+        Objects.requireNonNull(document, "player bson document cannot be null!");
 
         this.id = id;
-        this.name = Objects.requireNonNull(bsonDocument.getString("name"), "name cannot be null!").getValue();
-        this.inventory = new PlayerInventory(this, bsonDocument.getDocument("inventory"));
-        this.currencies = new PlayerCurrencies(this, bsonDocument.getDocument("currencies"));
-        this.stats = new PlayerStats(this, bsonDocument.getDocument("stats"));
-        this.settings = new PlayerSettings(this, bsonDocument.getDocument("settings"));
-        this.statistics = new PlayerStatistics(this, bsonDocument.getDocument("statistics"));
+        this.name = Objects.requireNonNull(document.getString("name"), "name cannot be null!").getValue();
+        this.inventory = new PlayerInventory(this, document.getDocument("inventory"));
+        this.currencies = new PlayerCurrencies(this, document.getDocument("currencies"));
+        this.stats = new PlayerStats(this, document.getDocument("stats"));
+        this.settings = new PlayerSettings(this, document.getDocument("settings"));
+        this.statistics = new PlayerStatistics(this, document.getDocument("statistics"));
         this.database = new PlayerDatabase(this);
     }
 
     /**
-     * Gets id.
+     * Gets player roblox user id.
      *
-     * @return Roblox user id.
+     * @return Player roblox user id.
      */
     public long getId() {
         return this.id;
     }
 
     /**
-     * Gets roblox name.
+     * Gets player roblox name.
      *
-     * @return Roblox name.
+     * @return Player roblox name.
      */
     @Nonnull
     public String getName() {
@@ -86,7 +86,7 @@ public final class Player extends MetadataCachedEntity {
     }
 
     /**
-     * Gets inventory.
+     * Gets player inventory.
      *
      * @return Player inventory.
      */
@@ -96,7 +96,7 @@ public final class Player extends MetadataCachedEntity {
     }
 
     /**
-     * Gets currencies.
+     * Gets player currencies.
      *
      * @return Player currencies.
      */
@@ -106,7 +106,7 @@ public final class Player extends MetadataCachedEntity {
     }
 
     /**
-     * Gets stats.
+     * Gets player stats.
      *
      * @return Player stats.
      */
@@ -116,7 +116,7 @@ public final class Player extends MetadataCachedEntity {
     }
 
     /**
-     * Gets settings.
+     * Gets player settings.
      *
      * @return Player settings.
      */
@@ -145,31 +145,27 @@ public final class Player extends MetadataCachedEntity {
         return this.database;
     }
 
+
     /*
     CONVERTERS
      */
 
     /**
-     * Gets player as a json object.
+     * Converts player to a json object.
      *
-     * @return Player as a json object.
+     * @return Player json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
-        //Creates json object.
-        JsonObject json_object = new JsonObject();
-
-        //Configure fields.
-        json_object.addProperty("id", this.id);
-        json_object.addProperty("name", this.name);
-        json_object.add("inventory", this.inventory.toJsonObject());
-        json_object.add("currencies", this.currencies.toJsonObject());
-        json_object.add("stats", this.stats.toJsonObject());
-        json_object.add("settings", this.settings.toJsonObject());
-        json_object.add("statistics", this.statistics.toJsonObject());
-
-        //Returns created json object.
-        return json_object;
+        JsonObject json = new JsonObject();
+        json.addProperty("id", this.id);
+        json.addProperty("name", this.name);
+        json.add("inventory", this.inventory.toJsonObject());
+        json.add("currencies", this.currencies.toJsonObject());
+        json.add("stats", this.stats.toJsonObject());
+        json.add("settings", this.settings.toJsonObject());
+        json.add("statistics", this.statistics.toJsonObject());
+        return json;
     }
 
 
@@ -186,7 +182,6 @@ public final class Player extends MetadataCachedEntity {
         //Objects null check.
         Objects.requireNonNull(json_object, "player json object cannot be null!");
 
-        //Handles updates.
         this.name = json_object.get("name").getAsString();
         this.inventory.update(json_object.getAsJsonObject("inventory"));
         this.currencies.update(json_object.getAsJsonObject("currencies"));

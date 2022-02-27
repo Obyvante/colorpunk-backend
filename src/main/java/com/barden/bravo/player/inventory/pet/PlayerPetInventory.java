@@ -1,5 +1,6 @@
 package com.barden.bravo.player.inventory.pet;
 
+import com.barden.bravo.cosmetics.pet.PetProvider;
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.cosmetics.pet.PlayerPet;
 import com.barden.library.metadata.MetadataEntity;
@@ -23,7 +24,7 @@ public final class PlayerPetInventory extends MetadataEntity {
     private final BiMap<UUID, PlayerPet> content = HashBiMap.create();
 
     /**
-     * Creates player pet inventory object.
+     * Creates player pet inventory.
      *
      * @param player Player.
      */
@@ -32,10 +33,10 @@ public final class PlayerPetInventory extends MetadataEntity {
     }
 
     /**
-     * Creates player pet inventory object.
+     * Creates player pet inventory from a bson document.
      *
      * @param player   Player.
-     * @param document Bson document. (MONGO)
+     * @param document Player pet inventory bson document.
      */
     public PlayerPetInventory(@Nonnull Player player, @Nonnull BsonDocument document) {
         //Objects null check.
@@ -43,7 +44,6 @@ public final class PlayerPetInventory extends MetadataEntity {
 
         this.player = Objects.requireNonNull(player, "player cannot be null!");
 
-        //Loops pet bson documents.
         document.keySet().forEach(pet_uid_string -> {
             //Declares required fields.
             @Nonnull BsonDocument pet_document = Objects.requireNonNull(document.getDocument(pet_uid_string), "player pet bson document cannot be null!");
@@ -99,23 +99,24 @@ public final class PlayerPetInventory extends MetadataEntity {
     }
 
     /**
-     * Creates a pet.
+     * Creates a player pet.
      *
      * @param id Pet id.
-     * @return Player pet.
+     * @return Created player pet.
      */
     @Nonnull
     public PlayerPet add(int id) {
-        //Creates new pet.
+        if (PetProvider.find(id).isEmpty())
+            throw new NullPointerException("pet(" + id + ") does not exist!");
+
         PlayerPet pet = new PlayerPet(this.player, UUID.randomUUID(), id, false);
-        //Adds created pet to the pets list.
         this.content.put(pet.getUID(), pet);
-        //Returns created pet.
+
         return pet;
     }
 
     /**
-     * Removes pet from pets list.
+     * Removes player pet.
      *
      * @param id Player pet unique id.
      */
@@ -129,19 +130,19 @@ public final class PlayerPetInventory extends MetadataEntity {
      */
 
     /**
-     * Gets player pet inventory as a json object.
+     * Converts player pet inventory to a json object.
      *
-     * @return Player pet inventory as a json object.
+     * @return Player pet inventory json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
-        JsonObject object = new JsonObject();
-        this.content.forEach((key, value) -> object.add(key.toString(), value.toJsonObject()));
-        return object;
+        JsonObject json = new JsonObject();
+        this.content.forEach((key, value) -> json.add(key.toString(), value.toJsonObject()));
+        return json;
     }
 
     /**
-     * Converts player pet inventory to bson document.
+     * Converts player pet inventory to a bson document.
      *
      * @return Player pet inventory bson document.
      */
@@ -160,27 +161,24 @@ public final class PlayerPetInventory extends MetadataEntity {
     /**
      * Updates player pet inventory.
      *
-     * @param object Json object.
+     * @param json Player pet inventory json object.
      */
-    public void update(@Nonnull JsonObject object) {
+    public void update(@Nonnull JsonObject json) {
         //Objects null check.
-        Objects.requireNonNull(object, "player pet inventory json object cannot be null!");
+        Objects.requireNonNull(json, "player pet inventory json object cannot be null!");
 
-        //Loops through pets.
+        //Handles existed player pets.
         this.content.forEach((key, value) -> {
-            //Handles existing pets.
-            if (object.keySet().contains(key.toString()))
-                value.update(object.getAsJsonObject(key.toString())); //If pet is exist in the content json object.
+            if (json.keySet().contains(key.toString()))
+                value.update(json.getAsJsonObject(key.toString()));
             else
-                this.remove(key); //Deletes player pet since it is no longer in the inventory.
+                this.remove(key);
         });
 
-        //Handles new pets.
-        object.keySet().stream().filter(pet_uid_string -> this.find(UUID.fromString(pet_uid_string)).isEmpty()).forEach(pet_uid_string -> {
-            //Declares pet uid.
+        //Handles new player pets.
+        json.keySet().stream().filter(pet_uid_string -> this.find(UUID.fromString(pet_uid_string)).isEmpty()).forEach(pet_uid_string -> {
             @Nonnull UUID pet_uid = UUID.fromString(pet_uid_string);
-            //Creates new player pet object then adds to the content list.
-            this.content.put(pet_uid, new PlayerPet(this.player, pet_uid, object.getAsJsonObject(pet_uid_string)));
+            this.content.put(pet_uid, new PlayerPet(this.player, pet_uid, json.getAsJsonObject(pet_uid_string)));
         });
     }
 }
