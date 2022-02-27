@@ -24,7 +24,7 @@ public final class PlayerTrail extends MetadataEntity {
     private boolean active;
 
     /**
-     * Creates player pet object.
+     * Creates a player pet.
      *
      * @param player Player.
      * @param uid    Player trail unique id
@@ -39,7 +39,7 @@ public final class PlayerTrail extends MetadataEntity {
     }
 
     /**
-     * Creates player trail object from json object.
+     * Creates a player trail from json object.
      *
      * @param player      Player.
      * @param uid         Player trail unique id.
@@ -92,7 +92,7 @@ public final class PlayerTrail extends MetadataEntity {
     }
 
     /**
-     * Gets if trail is active or not.
+     * Gets if player trail is active or not.
      *
      * @return If player trail is active or not.
      */
@@ -101,7 +101,7 @@ public final class PlayerTrail extends MetadataEntity {
     }
 
     /**
-     * Sets trail status.
+     * Sets player trail status.
      *
      * @param status Player trail status. (TRUE = active, FALSE = inactive)
      */
@@ -138,7 +138,7 @@ public final class PlayerTrail extends MetadataEntity {
     }
 
     /**
-     * Converts player trail object to bson document.
+     * Converts player trail to bson document.
      *
      * @return Player trail bson document. (BSON)
      */
@@ -161,7 +161,7 @@ public final class PlayerTrail extends MetadataEntity {
      */
 
     /**
-     * Updates player trail object.
+     * Updates player trail.
      *
      * @param json_object Json object.
      */

@@ -24,7 +24,7 @@ public final class PlayerPet extends MetadataEntity {
     private boolean active;
 
     /**
-     * Creates player pet object.
+     * Creates a player pet.
      *
      * @param player Player.
      * @param uid    Player pet unique id.
@@ -39,7 +39,7 @@ public final class PlayerPet extends MetadataEntity {
     }
 
     /**
-     * Creates player pet object from json object.
+     * Creates a player pet from json object.
      *
      * @param player      Player.
      * @param uid         Player Pet unique id.
@@ -73,6 +73,16 @@ public final class PlayerPet extends MetadataEntity {
     }
 
     /**
+     * Gets player pet unique id.
+     *
+     * @return Player pet unique id.
+     */
+    @Nonnull
+    public UUID getUID() {
+        return this.uid;
+    }
+
+    /**
      * Gets id.
      *
      * @return Pet id.
@@ -82,17 +92,7 @@ public final class PlayerPet extends MetadataEntity {
     }
 
     /**
-     * Gets UID.
-     *
-     * @return Pet unique id.
-     */
-    @Nonnull
-    public UUID getUID() {
-        return this.uid;
-    }
-
-    /**
-     * Gets if pet is active or not.
+     * Gets if player pet is active or not.
      *
      * @return If player pet is active or not.
      */
@@ -101,7 +101,7 @@ public final class PlayerPet extends MetadataEntity {
     }
 
     /**
-     * Sets pet status.
+     * Sets player pet status.
      *
      * @param status Player pet status. (TRUE = active, FALSE = inactive)
      */
@@ -137,7 +137,7 @@ public final class PlayerPet extends MetadataEntity {
     }
 
     /**
-     * Converts player pet object to bson document.
+     * Converts player pet to bson document.
      *
      * @return Player pet bson document. (BSON)
      */
@@ -160,7 +160,7 @@ public final class PlayerPet extends MetadataEntity {
      */
 
     /**
-     * Updates player pet object.
+     * Updates player pet.
      *
      * @param json_object Json object.
      */
