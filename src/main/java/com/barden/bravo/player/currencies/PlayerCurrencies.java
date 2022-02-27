@@ -145,7 +145,7 @@ public final class PlayerCurrencies {
         //Objects null check.
         Objects.requireNonNull(json, "player currencies json object cannot be null!");
 
-        //Clears all player currencies to make sure it won't have existed player currencies.
+        //Clears all player currencies to make sure it won't have existed player currency.
         this.content.clear();
 
         json.keySet().forEach(currency_string ->

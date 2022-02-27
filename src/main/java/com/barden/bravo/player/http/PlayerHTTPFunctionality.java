@@ -36,7 +36,7 @@ public final class PlayerHTTPFunctionality {
     @Nonnull
     public static JsonObject getById(@Nonnull String id) {
         //Declares base fields.
-        JsonObject json_object;
+        JsonObject json;
         boolean success = true;
         long user_id = -1;
 
@@ -55,39 +55,39 @@ public final class PlayerHTTPFunctionality {
         //Handles success.
         if (!success) {
             //Creates json object.
-            json_object = HTTPResponse.of(false, Result.INVALID_USER_ID);
+            json = HTTPResponse.of(false, Result.INVALID_USER_ID);
         } else {
             //Gets player field.
             Optional<Player> player = PlayerProvider.find(user_id);
             //Creates json object.
-            json_object = HTTPResponse.of(player.isPresent(), Result.PLAYER_NOT_FOUND_IN_CACHE);
+            json = HTTPResponse.of(player.isPresent(), Result.PLAYER_NOT_FOUND_IN_CACHE);
             //If player is present, adds to the results.
-            player.ifPresent(value -> json_object.add("results", value.toJsonObject()));
+            player.ifPresent(value -> json.add("results", value.toJsonObject()));
         }
 
         //Returns create json object.
-        return json_object;
+        return json;
     }
 
     /**
      * Updates player by its id.
      *
-     * @param json_object Player json object.
+     * @param json Player json object.
      * @return Update result.
      */
     @Nonnull
-    public static JsonObject updateById(@Nonnull JsonObject json_object) {
+    public static JsonObject updateById(@Nonnull JsonObject json) {
         //Objects check null.
-        Objects.requireNonNull(json_object, "player json object cannot be null!");
+        Objects.requireNonNull(json, "player json object cannot be null!");
 
         //If json is not valid, returns not successful response entity.
-        if (json_object.isJsonNull() || !json_object.has("id"))
+        if (json.isJsonNull() || !json.has("id"))
             return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
 
         //Handles json exceptions.
         try {
             //Declares user id.
-            long user_id = json_object.get("id").getAsLong();
+            long user_id = json.get("id").getAsLong();
 
             //Gets player from the cache.
             Player player = PlayerProvider.find(user_id).orElse(null);
@@ -96,7 +96,7 @@ public final class PlayerHTTPFunctionality {
                 return HTTPResponse.of(false, Result.PLAYER_NOT_FOUND_IN_CACHE);
 
             //Updates player cache with declared json object.
-            player.update(json_object);
+            player.update(json);
 
             //Returns success
             return HTTPResponse.of(true);
@@ -108,24 +108,24 @@ public final class PlayerHTTPFunctionality {
     /**
      * Updates players.
      *
-     * @param json_object Players json object.
+     * @param json Players json object.
      * @return Update result.
      */
     @Nonnull
-    public static JsonObject update(@Nonnull JsonObject json_object) {
+    public static JsonObject update(@Nonnull JsonObject json) {
         //Objects check null.
-        Objects.requireNonNull(json_object, "player json object cannot be null!");
+        Objects.requireNonNull(json, "player json object cannot be null!");
 
         //If json is not valid, returns not successful response entity.
-        if (json_object.isJsonNull() || json_object.keySet().size() == 0)
+        if (json.isJsonNull() || json.keySet().size() == 0)
             return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
 
         //Handles json exceptions.
         try {
             //Loops through player json objects.
-            json_object.entrySet().forEach(entry -> {
+            json.entrySet().forEach(entry -> {
                 //Declares player json object.
-                JsonObject player_json_object = entry.getValue().getAsJsonObject();
+                JsonObject player_json = entry.getValue().getAsJsonObject();
 
                 //Declares user id.
                 long user_id = Long.parseLong(entry.getKey());
@@ -137,7 +137,7 @@ public final class PlayerHTTPFunctionality {
                     return;
 
                 //Updates player cache with declared json object.
-                player.update(player_json_object);
+                player.update(player_json);
             });
 
             //Returns success
@@ -185,21 +185,21 @@ public final class PlayerHTTPFunctionality {
         }
 
         //Creates json object.
-        JsonObject json_object;
+        JsonObject json;
 
         //If it is successful, adds player json object as a results.
         if (success) {
             try {
-                json_object = HTTPResponse.of(true);
-                json_object.add("results", PlayerProvider.handle(user_id, name, insert).toJsonObject()); // Player provider will handle all heavy work.
+                json = HTTPResponse.of(true);
+                json.add("results", PlayerProvider.handle(user_id, name, insert).toJsonObject()); // Player provider will handle all heavy work.
             } catch (Exception exception) {
-                json_object = HTTPResponse.of(false, Result.PLAYER_NOT_FOUND);
+                json = HTTPResponse.of(false, Result.PLAYER_NOT_FOUND);
             }
         } else {
-            json_object = HTTPResponse.of(false, Result.INVALID_USER_ID);
+            json = HTTPResponse.of(false, Result.INVALID_USER_ID);
         }
 
         //Returns configured json object.
-        return json_object;
+        return json;
     }
 }
