@@ -4,7 +4,7 @@ import com.barden.bravo.player.Player;
 import com.barden.bravo.player.currencies.type.PlayerCurrencyType;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
-import org.bson.BsonInt32;
+import org.bson.BsonDouble;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import java.util.Objects;
 public final class PlayerCurrencies {
 
     private final Player player;
-    private final HashMap<PlayerCurrencyType, Integer> content = new HashMap<>();
+    private final HashMap<PlayerCurrencyType, Double> content = new HashMap<>();
 
     /**
      * Creates a player currencies.
@@ -40,7 +40,7 @@ public final class PlayerCurrencies {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
 
         //Declares player currencies from declared bson document.
-        document.forEach((key, value) -> this.content.put(PlayerCurrencyType.valueOf(key), value.asInt32().intValue()));
+        document.forEach((key, value) -> this.content.put(PlayerCurrencyType.valueOf(key), Math.max(value.asDouble().getValue(), 0.0d)));
     }
 
     /**
@@ -59,8 +59,8 @@ public final class PlayerCurrencies {
      * @param type Player currency type.
      * @return Player currency value.
      */
-    public int get(@Nonnull PlayerCurrencyType type) {
-        return this.content.getOrDefault(Objects.requireNonNull(type, "player currency type cannot be null!"), 0);
+    public double get(@Nonnull PlayerCurrencyType type) {
+        return this.content.getOrDefault(Objects.requireNonNull(type, "player currency type cannot be null!"), 0.0d);
     }
 
     /**
@@ -71,8 +71,9 @@ public final class PlayerCurrencies {
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
-    public void set(@Nonnull PlayerCurrencyType type, int value) {
-        this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), Math.max(value, 0));
+    public void set(@Nonnull PlayerCurrencyType type, double value) {
+        assert value >= 0 : "player currency value must be positive!";
+        this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), value);
     }
 
     /**
@@ -83,8 +84,9 @@ public final class PlayerCurrencies {
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
-    public void add(@Nonnull PlayerCurrencyType type, int value) {
-        this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), Math.max(this.get(type) + value, 0));
+    public void add(@Nonnull PlayerCurrencyType type, double value) {
+        assert value >= 0 : "player currency value must be positive!";
+        this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), this.get(type) + value);
     }
 
     /**
@@ -95,7 +97,8 @@ public final class PlayerCurrencies {
      * @param type  Player currency type.
      * @param value Value. (POSITIVE NUMBER)
      */
-    public void remove(@Nonnull PlayerCurrencyType type, int value) {
+    public void remove(@Nonnull PlayerCurrencyType type, double value) {
+        assert value >= 0 : "player currency value must be positive!";
         this.content.put(Objects.requireNonNull(type, "player currency type cannot be null!"), Math.max(this.get(type) - value, 0));
     }
 
@@ -124,7 +127,7 @@ public final class PlayerCurrencies {
     @Nonnull
     public BsonDocument toBsonDocument() {
         BsonDocument bson_document = new BsonDocument();
-        this.content.forEach((currency, value) -> bson_document.put(currency.name(), new BsonInt32(value)));
+        this.content.forEach((currency, value) -> bson_document.put(currency.name(), new BsonDouble(value)));
         return bson_document;
     }
 
@@ -145,6 +148,7 @@ public final class PlayerCurrencies {
         //Clears all player currencies to make sure it won't have existed player currencies.
         this.content.clear();
 
-        json.keySet().forEach(currency_string -> this.content.put(PlayerCurrencyType.valueOf(currency_string), json.get(currency_string).getAsInt()));
+        json.keySet().forEach(currency_string ->
+                this.content.put(PlayerCurrencyType.valueOf(currency_string), Math.max(json.get(currency_string).getAsDouble(), 0.0d)));
     }
 }

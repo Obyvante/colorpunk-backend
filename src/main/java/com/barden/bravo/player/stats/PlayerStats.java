@@ -40,7 +40,7 @@ public final class PlayerStats {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
 
         //Declares player stats from the declared bson document.
-        document.forEach((key, value) -> this.content.put(PlayerStatType.valueOf(key), value.asDouble().getValue()));
+        document.forEach((key, value) -> this.content.put(PlayerStatType.valueOf(key), Math.max(value.asDouble().getValue(), 0.0d)));
     }
 
     /**
@@ -72,7 +72,8 @@ public final class PlayerStats {
      * @param value Value. (POSITIVE NUMBER)
      */
     public void set(@Nonnull PlayerStatType type, double value) {
-        this.content.put(Objects.requireNonNull(type, "player stat type cannot be null!"), Math.max(value, 0));
+        assert value >= 0 : "player stat value must be positive!";
+        this.content.put(Objects.requireNonNull(type, "player stat type cannot be null!"), value);
     }
 
     /**
@@ -84,7 +85,8 @@ public final class PlayerStats {
      * @param value Value. (POSITIVE NUMBER)
      */
     public void add(@Nonnull PlayerStatType type, double value) {
-        this.content.put(Objects.requireNonNull(type, "player stat type cannot be null!"), Math.max(this.get(type) + value, 0));
+        assert value >= 0 : "player stat value must be positive!";
+        this.content.put(Objects.requireNonNull(type, "player stat type cannot be null!"), this.get(type) + value);
     }
 
     /**
@@ -96,6 +98,7 @@ public final class PlayerStats {
      * @param value Value. (POSITIVE NUMBER)
      */
     public void remove(@Nonnull PlayerStatType type, double value) {
+        assert value >= 0 : "player stat value must be positive!";
         this.content.put(Objects.requireNonNull(type, "player stat type cannot be null!"), Math.max(this.get(type) - value, 0));
     }
 
@@ -145,6 +148,6 @@ public final class PlayerStats {
         //Clears all player stats to make sure it won't have existed player stat.
         this.content.clear();
 
-        json.entrySet().forEach((entry) -> this.content.put(PlayerStatType.valueOf(entry.getKey()), entry.getValue().getAsDouble()));
+        json.entrySet().forEach((entry) -> this.content.put(PlayerStatType.valueOf(entry.getKey()), Math.max(entry.getValue().getAsDouble(), 0.0d)));
     }
 }

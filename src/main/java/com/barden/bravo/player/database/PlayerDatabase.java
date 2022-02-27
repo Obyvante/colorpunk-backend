@@ -69,7 +69,6 @@ public final class PlayerDatabase {
     }
 
 
-
     /*
     CONVERTERS
      */
@@ -83,7 +82,7 @@ public final class PlayerDatabase {
      */
     @Nonnull
     public Bson toQueryBson() {
-        return new BsonDocument(PlayerBsonField.ID.getPath(), new BsonInt64(this.player.getId()));
+        return new BsonDocument(PlayerBsonField.ID.getPath(), this.toBsonValue(PlayerBsonField.ID));
     }
 
     /**
@@ -108,7 +107,7 @@ public final class PlayerDatabase {
     @Nonnull
     public Bson toUpdateBson(@Nonnull PlayerBsonField... fields) {
         return Updates.combine(Arrays.stream(Objects.requireNonNull(fields))
-                .map(field -> new BsonDocument(field.getPath(), this.toBsonValue(field)))
+                .map(field -> Updates.set(field.getPath(), this.toBsonValue(field)))
                 .toList());
     }
 
