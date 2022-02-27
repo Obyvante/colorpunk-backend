@@ -186,7 +186,7 @@ public final class Player extends MetadataCachedEntity {
         this.inventory.update(json_object.getAsJsonObject("inventory"));
         this.currencies.update(json_object.getAsJsonObject("currencies"));
         this.stats.update(json_object.getAsJsonObject("stats"));
-        //this.settings.update(json_object.getAsJsonObject("settings"));
+        this.settings.update(json_object.getAsJsonObject("settings"));
         this.statistics.update(json_object.getAsJsonObject("statistics"));
 
         //Resets cache time.

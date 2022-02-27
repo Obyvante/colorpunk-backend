@@ -176,9 +176,9 @@ public final class PlayerTrailInventory extends MetadataEntity {
         });
 
         //Handles new player trails.
-        json.keySet().stream().filter(trail_uid_string -> this.find(UUID.fromString(trail_uid_string)).isEmpty()).forEach(trail_uid_string -> {
-            @Nonnull UUID trail_uid = UUID.fromString(trail_uid_string);
-            this.content.put(trail_uid, new PlayerTrail(this.player, trail_uid, json.getAsJsonObject(trail_uid_string)));
+        json.entrySet().stream().filter(element -> this.find(UUID.fromString(element.getKey())).isEmpty()).forEach(element -> {
+            @Nonnull UUID pet_uid = UUID.fromString(element.getKey());
+            this.content.put(pet_uid, new PlayerTrail(this.player, pet_uid, element.getValue().getAsJsonObject()));
         });
     }
 }

@@ -118,10 +118,10 @@ public final class PlayerPetInventory extends MetadataEntity {
     /**
      * Removes player pet.
      *
-     * @param id Player pet unique id.
+     * @param uid Player pet unique id.
      */
-    public void remove(@Nonnull UUID id) {
-        this.content.remove(Objects.requireNonNull(id));
+    public void remove(@Nonnull UUID uid) {
+        this.content.remove(Objects.requireNonNull(uid));
     }
 
 
@@ -176,9 +176,9 @@ public final class PlayerPetInventory extends MetadataEntity {
         });
 
         //Handles new player pets.
-        json.keySet().stream().filter(pet_uid_string -> this.find(UUID.fromString(pet_uid_string)).isEmpty()).forEach(pet_uid_string -> {
-            @Nonnull UUID pet_uid = UUID.fromString(pet_uid_string);
-            this.content.put(pet_uid, new PlayerPet(this.player, pet_uid, json.getAsJsonObject(pet_uid_string)));
+        json.entrySet().stream().filter(element -> this.find(UUID.fromString(element.getKey())).isEmpty()).forEach(element -> {
+            @Nonnull UUID pet_uid = UUID.fromString(element.getKey());
+            this.content.put(pet_uid, new PlayerPet(this.player, pet_uid, element.getValue().getAsJsonObject()));
         });
     }
 }

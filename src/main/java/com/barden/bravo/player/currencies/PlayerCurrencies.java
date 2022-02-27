@@ -148,7 +148,6 @@ public final class PlayerCurrencies {
         //Clears all player currencies to make sure it won't have existed player currency.
         this.content.clear();
 
-        json.keySet().forEach(currency_string ->
-                this.content.put(PlayerCurrencyType.valueOf(currency_string), Math.max(json.get(currency_string).getAsDouble(), 0.0d)));
+        json.entrySet().forEach((entry) -> this.content.put(PlayerCurrencyType.valueOf(entry.getKey()), Math.max(entry.getValue().getAsDouble(), 0.0d)));
     }
 }
