@@ -1,7 +1,6 @@
 package com.barden.bravo.player;
 
 import com.barden.library.BardenJavaLibrary;
-import com.barden.library.database.DatabaseProvider;
 import com.barden.library.scheduler.SchedulerProvider;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -22,37 +21,41 @@ import java.util.concurrent.TimeUnit;
  */
 public final class PlayerProvider {
 
+    /*
+    STATICS
+     */
+
+    private static final PlayerMongoProvider mongoProvider = new PlayerMongoProvider();
+
+    /**
+     * Gets player mongo provider.
+     *
+     * @return Player mongo provider.
+     */
+    @Nonnull
+    public static PlayerMongoProvider getMongoProvider() {
+        return mongoProvider;
+    }
+
     /**
      * Initializes player provider.
      */
     public static void initialize() {
-        //Creates mongo indexes.
-        createMongoIndexes();
+        PlayerProvider.getMongoProvider().addIndex(Indexes.ascending("id"), new IndexOptions().unique(true).background(true));
 
         //Pushes players updated data to mongo.
         SchedulerProvider.create()
                 .after(5, TimeUnit.MINUTES)
                 .every(1, TimeUnit.MINUTES)
-                .schedule(task -> PlayerMongoProvider.update(content.values()));
+                .schedule(task -> PlayerProvider.getMongoProvider().save(content.values()));
 
         //Logging.
         BardenJavaLibrary.getLogger().info("Player provider is initialized successfully!");
     }
 
-    /**
-     * Creates mongo indexes for players collection. (Performance and querying)
-     */
-    private static void createMongoIndexes() {
-        //Unique indexes.
-        DatabaseProvider.mongo().createIndex(
-                "bravo",
-                "players",
-                Indexes.ascending("id"), new IndexOptions().unique(true).background(true));
-    }
-
 
     /*
-    ROOT
+    BODY
      */
 
     private static final BiMap<Long, Player> content = HashBiMap.create();
@@ -123,7 +126,7 @@ public final class PlayerProvider {
             return player;
 
         //Gets mongo collection.
-        MongoCollection<BsonDocument> collection = PlayerMongoProvider.getCollection();
+        MongoCollection<BsonDocument> collection = PlayerProvider.getMongoProvider().getCollection();
         //Declares required fields.
         Document id_bson = new Document("id", id);
         MongoCursor<BsonDocument> player_document_cursor = collection.find(id_bson).limit(1).cursor(); // NOT ASYNC! -> IT WILL FREEZE MAIN THREAD.

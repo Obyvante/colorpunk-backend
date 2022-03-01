@@ -1,6 +1,8 @@
 package com.barden.bravo.player;
 
+import com.barden.bravo.database.DatabaseObject;
 import com.barden.bravo.player.currencies.PlayerCurrencies;
+import com.barden.bravo.player.database.PlayerBsonField;
 import com.barden.bravo.player.database.PlayerDatabase;
 import com.barden.bravo.player.inventory.PlayerInventory;
 import com.barden.bravo.player.settings.PlayerSettings;
@@ -17,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Player class.
  */
-public final class Player extends MetadataCachedEntity {
+public final class Player extends MetadataCachedEntity implements DatabaseObject<Player, PlayerBsonField> {
 
     private final long id;
     private String name;
