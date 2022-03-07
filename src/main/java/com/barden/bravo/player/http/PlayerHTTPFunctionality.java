@@ -193,7 +193,7 @@ public final class PlayerHTTPFunctionality {
                 json = HTTPResponse.of(true);
                 json.add("results", PlayerProvider.handle(user_id, name, insert).toJsonObject()); // Player provider will handle all heavy work.
             } catch (Exception exception) {
-                json = HTTPResponse.of(false, Result.PLAYER_NOT_FOUND);
+                json = HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
             }
         } else {
             json = HTTPResponse.of(false, Result.INVALID_USER_ID);

@@ -4,14 +4,14 @@ package com.barden.bravo.player.settings.type;
  * Player settings.
  */
 public enum PlayerSettingType {
-    SPEAKER(1),
-    SFX(1),
-    MUSIC(1),
-    AUTO_ACCEPT(0);
+    VFX(1d),
+    MUSIC(1d),
+    SKIP_WARNING_SCREEN(0d),
+    AUTO_ACCEPT_MATCH(0d);
 
-    private final int defaultValue;
+    private final double defaultValue;
 
-    PlayerSettingType(int defaultValue) {
+    PlayerSettingType(double defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -20,7 +20,7 @@ public enum PlayerSettingType {
      *
      * @return Default value.
      */
-    public int getDefaultValue() {
+    public double getDefaultValue() {
         return this.defaultValue;
     }
 }

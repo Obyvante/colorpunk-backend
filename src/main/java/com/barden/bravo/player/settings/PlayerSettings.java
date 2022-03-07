@@ -15,7 +15,7 @@ import java.util.Objects;
 public final class PlayerSettings {
 
     private final Player player;
-    private final HashMap<PlayerSettingType, Integer> content = new HashMap<>();
+    private final HashMap<PlayerSettingType, Double> content = new HashMap<>();
 
     /**
      * Creates a player settings.
@@ -39,7 +39,7 @@ public final class PlayerSettings {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
 
         //Declares settings from the declared bson document.
-        document.forEach((key, value) -> this.content.put(PlayerSettingType.valueOf(key), value.asInt32().intValue()));
+        document.forEach((key, value) -> this.content.put(PlayerSettingType.valueOf(key), value.asDouble().doubleValue()));
     }
 
     /**
@@ -48,7 +48,7 @@ public final class PlayerSettings {
      * @param setting Player setting.
      * @return Player setting value.
      */
-    public int get(@Nonnull PlayerSettingType setting) {
+    public double get(@Nonnull PlayerSettingType setting) {
         return this.content.getOrDefault(Objects.requireNonNull(setting, "setting cannot be null!"), setting.getDefaultValue());
     }
 
@@ -72,7 +72,7 @@ public final class PlayerSettings {
      */
     @Nonnull
     public <T> T getAsEnum(@Nonnull PlayerSettingType setting, @Nonnull T[] enums) {
-        return Objects.requireNonNull(enums, "enums cannot be null!")[this.get(setting)];
+        return Objects.requireNonNull(enums, "enums cannot be null!")[(int) this.get(setting)];
     }
 
     /**
@@ -83,7 +83,7 @@ public final class PlayerSettings {
      * @return Player settings. (BUILDER)
      */
     @Nonnull
-    public PlayerSettings set(@Nonnull PlayerSettingType setting, int value) {
+    public PlayerSettings set(@Nonnull PlayerSettingType setting, double value) {
         this.content.put(Objects.requireNonNull(setting, "setting cannot be null!"), value);
         return this;
     }
@@ -134,6 +134,6 @@ public final class PlayerSettings {
         //Clears all player settings to make sure it won't have existed player setting.
         this.content.clear();
 
-        json.entrySet().forEach((entry) -> this.content.put(PlayerSettingType.valueOf(entry.getKey()), entry.getValue().getAsInt()));
+        json.entrySet().forEach((entry) -> this.content.put(PlayerSettingType.valueOf(entry.getKey()), entry.getValue().getAsDouble()));
     }
 }
