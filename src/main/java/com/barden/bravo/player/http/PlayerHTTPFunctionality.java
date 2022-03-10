@@ -92,8 +92,13 @@ public final class PlayerHTTPFunctionality {
             //Gets player from the cache.
             Player player = PlayerProvider.find(user_id).orElse(null);
             //If player does not exist, returns not successful response entity.
-            if (player == null)
-                return HTTPResponse.of(false, Result.PLAYER_NOT_FOUND_IN_CACHE);
+            if (player == null) {
+                try {
+                    player = PlayerProvider.handle(user_id, "", false);
+                } catch (Exception exception) {
+                    return HTTPResponse.of(false, Result.PLAYER_NOT_FOUND);
+                }
+            }
 
             //Updates player cache with declared json object.
             player.update(json);
@@ -133,8 +138,13 @@ public final class PlayerHTTPFunctionality {
                 //Gets player from the cache.
                 Player player = PlayerProvider.find(user_id).orElse(null);
                 //If player does not exist, returns not successful response entity.
-                if (player == null)
-                    return;
+                if (player == null) {
+                    try {
+                        player = PlayerProvider.handle(user_id, "", false);
+                    } catch (Exception exception) {
+                        return;
+                    }
+                }
 
                 //Updates player cache with declared json object.
                 player.update(player_json);

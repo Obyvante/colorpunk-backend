@@ -14,7 +14,7 @@ import java.util.Objects;
  * Player bson fields.
  */
 public enum PlayerBsonField implements DatabaseField<Player> {
-    ID("id"),
+    ID("id", true),
     NAME("name"),
     INVENTORY("inventory"),
     CURRENCIES("currencies"),
@@ -23,6 +23,7 @@ public enum PlayerBsonField implements DatabaseField<Player> {
     STATISTICS("statistics");
 
     private final String path;
+    private final boolean query;
 
     /**
      * Creates a player bson field.
@@ -30,7 +31,18 @@ public enum PlayerBsonField implements DatabaseField<Player> {
      * @param path Player bson field path.
      */
     PlayerBsonField(@Nonnull String path) {
+        this(path, false);
+    }
+
+    /**
+     * Creates a player bson field.
+     *
+     * @param path  Player bson field path.
+     * @param query If it is query or not.
+     */
+    PlayerBsonField(@Nonnull String path, boolean query) {
         this.path = Objects.requireNonNull(path);
+        this.query = query;
     }
 
     /**
@@ -46,7 +58,7 @@ public enum PlayerBsonField implements DatabaseField<Player> {
      */
     @Override
     public boolean isQuery() {
-        return false;
+        return this.query;
     }
 
     /**

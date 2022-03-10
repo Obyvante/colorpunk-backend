@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.influx.InfluxDbAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.lang.NonNull;
 
+import javax.annotation.PreDestroy;
 import java.util.Objects;
 
 /**
@@ -72,5 +73,16 @@ public class ProjectBravo {
 
         //Changes initialized field.
         INITIALIZED = true;
+    }
+
+    /**
+     * Runs on exit.
+     */
+    @PreDestroy
+    public void onExit() {
+        PlayerProvider.getMongoProvider().save(PlayerProvider.getContent());
+
+        //Terminates barden java library.
+        BardenJavaLibrary.terminate();
     }
 }
