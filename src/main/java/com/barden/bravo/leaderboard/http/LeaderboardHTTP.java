@@ -3,18 +3,25 @@ package com.barden.bravo.leaderboard.http;
 import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.leaderboard.Leaderboard;
 import com.barden.bravo.leaderboard.LeaderboardProvider;
-import com.barden.bravo.leaderboard.type.LeaderboardType;
+import com.barden.bravo.statistics.type.StatisticType;
+import com.barden.library.database.DatabaseProvider;
+import com.barden.library.scheduler.SchedulerProvider;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
+import java.util.HashMap;
 
 /**
  * Leaderboard HTTP class.
@@ -27,40 +34,76 @@ public class LeaderboardHTTP {
      * Results.
      */
     private enum Result {
-        INVALID_LEADERBOARD_TYPE
+        INVALID_JSON_STRUCTURE
     }
 
     /**
-     * Gets leaderboard by its type.
+     * Gets leaderboard.
      *
-     * @param type Leaderboard type.
+     * @param body Leaderboard information.
      * @return Response entity. (JSON OBJECT)
      */
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JsonObject> getByType(@RequestParam @Nonnull String type) {
-        //Objects null check.
-        Objects.requireNonNull(type, "leaderboard type cannot be null!");
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public DeferredResult<ResponseEntity<JsonObject>> get(@Nonnull @RequestBody JsonObject body) {
+        if (body.entrySet().isEmpty())
+            return new DeferredResult<>();
 
-        //Creates answer object.
-        JsonObject json_object;
+        //Creates deferred result.
+        DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
 
-        //Handles exceptions.
-        try {
-            //Gets leaderboard.
-            Leaderboard leaderboard = LeaderboardProvider.get(LeaderboardType.valueOf(type));
-
-            //Creates json object.
-            json_object = HTTPResponse.of(true);
-            json_object.add("results", leaderboard.toJsonObject());
-
-            //Returns response entity.
-            return new ResponseEntity<>(json_object, HttpStatus.OK);
-        } catch (Exception exception) {
-            json_object = HTTPResponse.of(false, Result.INVALID_LEADERBOARD_TYPE);
+        //Safet check.
+        if (body.entrySet().isEmpty()) {
+            result.setResult(new ResponseEntity<>(HTTPResponse.of(false, Result.INVALID_JSON_STRUCTURE), HttpStatus.OK));
+            return result;
         }
 
-        //Returns response entity.
-        return new ResponseEntity<>(json_object, HttpStatus.OK);
-    }
+        //Handles task.
+        SchedulerProvider.schedule(task -> {
+            JsonObject json = HTTPResponse.of(true, Result.INVALID_JSON_STRUCTURE);
+            JsonObject ranks_json = new JsonObject();
 
+            //Handles exceptions.
+            try {
+                //Declares required fields.
+                StatisticType type = StatisticType.valueOf(body.get("type").getAsString());
+
+                //Gets leaderboard.
+                Leaderboard leaderboard = LeaderboardProvider.get(type);
+
+                //Handles player rank requests.
+                if (body.keySet().contains("players")) {
+                    //Declares required fields.
+                    JsonArray players_json = body.getAsJsonArray("players");
+                    HashMap<String, Response<Long>> rank_responses = new HashMap<>();
+
+                    //Handles redis exception.
+                    try (Jedis resource = DatabaseProvider.redis().getClient().getResource()) {
+                        //Creates pipeline.
+                        Pipeline pipeline = resource.pipelined();
+                        //Fetches player ranks from the leaderboard.
+                        players_json.forEach(player -> rank_responses.put(player.getAsString(), pipeline.zrevrank("leaderboard:" + type, player.getAsString())));
+                        //Executes pipeline.
+                        pipeline.sync();
+                    }
+
+                    //Writes player ranks to the rank json.
+                    rank_responses.forEach((key, value) -> ranks_json.addProperty(key, value.get() + 1));
+
+                    //Adds response to the base json.
+                    json.add("responses", ranks_json);
+                }
+
+                //Creates json object.
+                json.add("results", leaderboard.toJsonObject());
+            } catch (Exception exception) {
+                json = HTTPResponse.of(false, Result.INVALID_JSON_STRUCTURE);
+            }
+
+            //Sets result.
+            result.setResult(new ResponseEntity<>(json, HttpStatus.OK));
+        });
+
+        //Returns response entity.
+        return result;
+    }
 }

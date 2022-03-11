@@ -9,6 +9,7 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -69,8 +70,8 @@ public final class StatisticsUpdater {
                 //Declares base fields.
                 Point point = Point
                         .measurement("players")
-                        .time(System.currentTimeMillis(), WritePrecision.MS)
-                        .addField("user", "u_" + entry.getKey());
+                        .time(Instant.now(), WritePrecision.NS)
+                        .addField("player", "id_" + entry.getKey());
 
                 //Declares required fields.
                 @Nonnull JsonObject user_statistics_json_object = entry.getValue().getAsJsonObject();
@@ -85,7 +86,7 @@ public final class StatisticsUpdater {
             //Declares base fields.
             Point point = Point
                     .measurement("game")
-                    .time(System.currentTimeMillis(), WritePrecision.MS);
+                    .time(Instant.now(), WritePrecision.NS);
             //Handles overall statistics.
             overall_json_object.entrySet().forEach((entry) -> point.addField(entry.getKey(), entry.getValue().getAsDouble()));
             //Adds configured point to the list.

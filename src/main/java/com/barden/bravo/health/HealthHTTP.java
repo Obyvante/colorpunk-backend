@@ -3,7 +3,6 @@ package com.barden.bravo.health;
 import com.barden.bravo.http.HTTPResponse;
 import com.google.gson.JsonObject;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

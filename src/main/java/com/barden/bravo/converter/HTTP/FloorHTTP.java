@@ -36,9 +36,9 @@ public class FloorHTTP {
      * @return Response entity. (JSON OBJECT)
      */
     @PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JsonObject> get(@Nonnull @RequestBody byte[] bytes) throws Exception {
+    public ResponseEntity<JsonObject> get(@RequestBody byte[] bytes) throws Exception {
         //If byte list is empty, no need to continue.
-        if (bytes.length == 0)
+        if (bytes== null || bytes.length == 0)
             return new ResponseEntity<>(HTTPResponse.of(false, Result.INVALID_FILE), HttpStatus.OK);
 
         //Converts request to an image.

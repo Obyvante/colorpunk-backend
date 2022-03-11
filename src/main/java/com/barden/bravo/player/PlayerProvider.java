@@ -134,6 +134,7 @@ public final class PlayerProvider {
         if (player_document_cursor.hasNext()) {
             //Creates player object from document. (DOCUMENT -> MONGO BSON)
             player = new Player(id, player_document_cursor.next());
+            player.getDatabase().saveRedis();
             //Adds created player object to the cache.
             content.put(player.getId(), player);
             //Returns created player object.
@@ -148,6 +149,7 @@ public final class PlayerProvider {
         player = new Player(id, name);
         //Saves to the database.
         player.getDatabase().save();
+        player.getDatabase().saveRedis();
 
         //Adds created player object to the cache.
         content.put(player.getId(), player);

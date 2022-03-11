@@ -1,27 +1,31 @@
-package com.barden.bravo.leaderboard.user;
+package com.barden.bravo.leaderboard.entry;
 
 import com.google.gson.JsonObject;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
- * Leaderboard user class.
+ * Leaderboard entry class.
  */
-public final class LeaderboardUser {
+public final class LeaderboardEntry {
 
     private final long id;
+    private final String name;
     private final double score;
     private final long position;
 
     /**
-     * Creates leaderboard user.
+     * Creates a leaderboard entry.
      *
      * @param id       Roblox user id.
-     * @param score    User score.
-     * @param position User position. (Leaderboard position)
+     * @param name     Roblox user name.
+     * @param score    Entry score.
+     * @param position Entry position. (Leaderboard position)
      */
-    public LeaderboardUser(long id, double score, long position) {
+    public LeaderboardEntry(long id, @Nonnull String name, double score, long position) {
         this.id = id;
+        this.name = Objects.requireNonNull(name);
         this.score = score;
         this.position = position;
     }
@@ -36,18 +40,28 @@ public final class LeaderboardUser {
     }
 
     /**
-     * Gets user score.
+     * Gets player name.
      *
-     * @return User score.
+     * @return Player name.
+     */
+    @Nonnull
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Gets entry score.
+     *
+     * @return Entry score.
      */
     public double getScore() {
         return this.score;
     }
 
     /**
-     * Get user position.
+     * Get entry position.
      *
-     * @return User position. (Leaderboard position.)
+     * @return Entry position. (Leaderboard position.)
      */
     public long getPosition() {
         return this.position;
@@ -59,17 +73,18 @@ public final class LeaderboardUser {
      */
 
     /**
-     * Gets leaderboard user as a json object.
+     * Gets leaderboard entry as a json object.
      *
-     * @return Leaderboard user as a json object.
+     * @return Leaderboard entry as a json object.
      */
     @Nonnull
     public JsonObject toJsonObject() {
         //Creates json object.
         JsonObject json_object = new JsonObject();
 
-        //Configures fields.
+        //Configure fields.
         json_object.addProperty("id", this.id);
+        json_object.addProperty("name", this.name);
         json_object.addProperty("score", this.score);
 
         //Returns created json object.

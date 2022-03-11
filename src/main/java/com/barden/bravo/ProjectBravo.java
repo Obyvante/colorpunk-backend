@@ -5,6 +5,7 @@ import com.barden.bravo.cosmetics.trail.TrailProvider;
 import com.barden.bravo.leaderboard.LeaderboardProvider;
 import com.barden.bravo.player.PlayerProvider;
 import com.barden.bravo.settings.Settings;
+import com.barden.bravo.statistics.StatisticsProvider;
 import com.barden.library.BardenJavaLibrary;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -66,8 +67,7 @@ public class ProjectBravo {
         PlayerProvider.initialize();
 
         //Initializes statistics provider.
-        //TODO: will enable statistics when it's ready for production.
-        //StatisticsProvider.initialize();
+        StatisticsProvider.initialize();
         //Initializes leaderboard provider.
         LeaderboardProvider.initialize();
 

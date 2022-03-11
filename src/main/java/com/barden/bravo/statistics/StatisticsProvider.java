@@ -4,40 +4,165 @@ import com.barden.bravo.statistics.type.StatisticType;
 import com.barden.bravo.statistics.updater.StatisticsUpdater;
 import com.barden.library.database.DatabaseProvider;
 import com.barden.library.database.influx.InfluxProvider;
+import com.barden.library.scheduler.SchedulerProvider;
 import com.influxdb.client.InfluxDBClient;
-import com.influxdb.client.domain.BucketRetentionRules;
-import com.influxdb.client.domain.TaskCreateRequest;
-import com.influxdb.client.domain.TaskStatusType;
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
+import com.influxdb.query.FluxTable;
 import com.influxdb.query.dsl.Flux;
 import com.influxdb.query.dsl.functions.restriction.Restrictions;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Statistics provider class.
  */
-//TODO: will inspect.
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public final class StatisticsProvider {
 
     public static final String INDEX = "statistics";
     public static final String INDEX_DAILY = "statistics:daily";
+    public static final String INDEX_DOWNSAMPLING = "statistics:downsampling";
 
     /**
-     * Initializes statistics provider object.
+     * Initializes statistics provider.
      */
     public static void initialize() {
-        //Handles mongo.
+        //Handles databases.
+        handleRedis();
         handleMongo();
-        //Handles influx.
         handleInflux();
 
         //Initializes statistics updater.
         StatisticsUpdater.initialize();
+
+        //Scheduler provider.
+        SchedulerProvider.create().every(15, TimeUnit.SECONDS).schedule(task -> {
+            //Checks if we should do downsampling or not.
+            boolean exists;
+            try (Jedis resource = DatabaseProvider.redis().getClient().getResource()) {
+                exists = resource.exists(INDEX_DOWNSAMPLING);
+            }
+
+            //If it is exists, no need to downsampling yet.
+            if (exists)
+                return;
+
+            //Declares required fields.
+            HashMap<StatisticType, Double> statistics = new HashMap<>();
+            HashMap<String, HashMap<StatisticType, Double>> players_statistics = new HashMap<>();
+            List<Point> points = new ArrayList<>();
+
+            //Queries game measurement.
+            List<FluxTable> game_table = DatabaseProvider.influx().getClient().getQueryApi().query(
+                    Flux.from(INDEX_DAILY)
+                            .range(-1L, ChronoUnit.YEARS)
+                            .filter(Restrictions.measurement().equal("game"))
+                            .pivot(List.of("_time"), List.of("_field"), "_value")
+                            .toString(),
+                    DatabaseProvider.influx().getOrganizationId());
+            //Queries player measurement.
+            List<FluxTable> players_table = DatabaseProvider.influx().getClient().getQueryApi().query(
+                    Flux.from(INDEX_DAILY)
+                            .range(-1L, ChronoUnit.YEARS)
+                            .filter(Restrictions.measurement().equal("players"))
+                            .pivot(List.of("_time"), List.of("_field"), "_value")
+                            .groupBy("user")
+                            .toString(),
+                    DatabaseProvider.influx().getOrganizationId());
+
+            //Handles game table loop.
+            for (FluxTable table : game_table) {
+                for (var record : table.getRecords()) {
+                    var values = record.getValues();
+
+                    for (var statistic : StatisticType.values()) {
+                        //Declares required fields.
+                        var previous_value = statistics.getOrDefault(statistic, 0.0d);
+                        var record_value = (Double) values.get(statistic.name());
+                        record_value = record_value == null ? 0.0d : record_value;
+
+                        //Calculates then saves to the cache map.
+                        statistics.put(statistic, previous_value + record_value);
+                    }
+                }
+            }
+
+            //Handles player table loop.
+            for (FluxTable table : players_table) {
+                for (var record : table.getRecords()) {
+                    var values = record.getValues();
+                    var user_id = (String) values.get("player");
+                    var player_statistics = players_statistics.getOrDefault(user_id, new HashMap<>());
+
+                    for (var statistic : StatisticType.values()) {
+                        //Declares required fields.
+                        var previous_value = player_statistics.getOrDefault(statistic, 0.0d);
+                        var record_value = (Double) values.get(statistic.name());
+                        record_value = record_value == null ? 0.0d : record_value;
+
+                        //Calculates then saves to the cache map.
+                        player_statistics.put(statistic, previous_value + record_value);
+                    }
+
+                    players_statistics.put(user_id, player_statistics);
+                }
+            }
+
+            //Converts all statistics to a point then add it to the points list.
+            statistics.forEach((key, value) -> points.add(
+                    Point.measurement("game")
+                            .time(Instant.now(), WritePrecision.NS)
+                            .addField(key.name(), value)));
+            players_statistics.forEach((key, value) -> {
+                Point point = Point.measurement("players")
+                        .time(Instant.now(), WritePrecision.NS)
+                        .addField("player", key);
+                value.forEach((_key, _value) -> point.addField(_key.name(), _value));
+                points.add(point);
+            });
+
+            //Writes all points to the no retention bucket. (INDEX) (DOWNSAMPLING END)
+            DatabaseProvider.influx().getWriteAPIBlocking().writePoints(INDEX, DatabaseProvider.influx().getOrganizationId(), points);
+
+            //Deletes game measurement.
+            DatabaseProvider.influx().getClient().getDeleteApi().delete(
+                    OffsetDateTime.now().minusYears(1),
+                    OffsetDateTime.now().plusYears(1),
+                    "",
+                    INDEX_DAILY,
+                    DatabaseProvider.influx().getOrganizationId()
+            );
+
+            //Resets downsampling date again.
+            handleRedis();
+        });
+    }
+
+    /**
+     * Handles redis.
+     */
+    private static void handleRedis() {
+        try (Jedis resource = DatabaseProvider.redis().getClient().getResource()) {
+            Pipeline pipeline = resource.pipelined();
+            pipeline.set(INDEX_DOWNSAMPLING, LocalDate.now().toString());
+            pipeline.expire(INDEX_DOWNSAMPLING, 60 * 60 * 24);
+            pipeline.sync();
+
+            if (!resource.save().equals("OK"))
+                throw new IllegalStateException("Couldn't save statistics fields!");
+        }
     }
 
     /**
@@ -61,110 +186,11 @@ public final class StatisticsProvider {
         InfluxDBClient client = provider.getClient();
 
         //Creates statistics bucket. (INFINITE)
-        if (provider.findBucketByName("statistics").isEmpty())
-            client.getBucketsApi().createBucket("statistics", provider.getOrganizationId());
+        if (provider.findBucketByName(INDEX).isEmpty())
+            client.getBucketsApi().createBucket(INDEX, provider.getOrganizationId());
 
         //Creates statistics bucket. (DAILY)
-        if (provider.findBucketByName("statistics:daily").isEmpty())
-            client.getBucketsApi().createBucket("statistics:daily",
-                    new BucketRetentionRules().everySeconds((int) TimeUnit.DAYS.toSeconds(1)),
-                    provider.getOrganizationId());
-
-        /*
-        GROUP
-         */
-
-        //If there is already a task, deletes it.
-        provider.findTaskByName("Statistic Downsampling: Group").ifPresent(task -> provider.getClient().getTasksApi().deleteTask(task));
-
-        //Creates flux string.
-        String task_option_group = """
-                option task = {
-                    name: "Statistic Downsampling: Group",
-                    every: 1d,
-                    offset: 0m
-                }
-                                
-                """;
-
-        //Adds remaining to the string. (GROUP)
-        task_option_group += Flux.from(INDEX_DAILY)
-                .range(-1L, ChronoUnit.DAYS)
-                .filter(Restrictions.measurement().equal("game"))
-                .aggregateWindow().withEvery("1d").withAggregateFunction("sum")
-                .to(INDEX, provider.getOrganization(), """
-                        ({"sum": r._value})
-                         """)
-                .toString();
-        //Creates group task.
-        client.getTasksApi().createTask(new TaskCreateRequest()
-                .description("Downsampling statistics to daily statistics. (GROUP)")
-                .status(TaskStatusType.ACTIVE)
-                .orgID(provider.getOrganizationId())
-                .flux(task_option_group));
-
-
-        /*
-        PLAYER
-         */
-
-        //If there is already a task, deletes it.
-        provider.findTaskByName("Statistic Downsampling: Players").ifPresent(task -> provider.getClient().getTasksApi().deleteTask(task));
-
-        //Creates flux string.
-        String task_players = """
-                option task = {
-                    name: "Statistic Downsampling: Players",
-                    every: 1d,
-                    offset: 0m
-                }
-                                
-                """;
-
-        //Creates string builder for 'function' in 'reduce'.
-        StringBuilder reduce_function = new StringBuilder("{")
-                .append("user: r.user, ")
-                .append("_time: now(), ")
-                .append("_measurement: \"players\"");
-        //Loops through all statistic types and add to 'function' one by one.
-        Arrays.stream(StatisticType.values()).forEach(type -> {
-            //Declares required fields.
-            String field = type.name();
-            String r_field = "r." + type.name();
-            String accumulator_field = "accumulator." + type.name();
-            String exists = "if exists " + r_field + " then " + accumulator_field + " + " + r_field + " else 0.0";
-
-            //Appends all configurations.
-            reduce_function.append(", ").append(field).append(": ").append(exists);
-        });
-        //Closes 'function' bracket.
-        reduce_function.append("}");
-
-        //Creates string builder for 'identity' in 'reduce'.
-        StringBuilder reduce_identity = new StringBuilder("{")
-                .append("user: \"\", ")
-                .append("_time: now(), ")
-                .append("_measurement: \"players\"");
-        //Loops through all statistic types and add to 'identity' one by one.
-        Arrays.stream(StatisticType.values()).forEach(type -> reduce_identity.append(", ").append(type.name()).append(": 0.0"));
-        //Closes 'identity' bracket.
-        reduce_identity.append("}");
-
-        //Adds remaining to the string. (PLAYER)
-        task_players += Flux.from("test")
-                .range(-1L, ChronoUnit.DAYS)
-                .filter(Restrictions.measurement().equal("players"))
-                .pivot(List.of("_time"), List.of("_field"), "_value")
-                .groupBy("user")
-                .reduce(reduce_function.toString(), reduce_identity.toString())
-                .to(INDEX, provider.getOrganization())
-                .toString();
-
-        //Creates players task.
-        client.getTasksApi().createTask(new TaskCreateRequest()
-                .description("Downsampling statistics to daily statistics. (PLAYER)")
-                .status(TaskStatusType.ACTIVE)
-                .orgID(provider.getOrganizationId())
-                .flux(task_players));
+        if (provider.findBucketByName(INDEX_DAILY).isEmpty())
+            client.getBucketsApi().createBucket(INDEX_DAILY, provider.getOrganizationId());
     }
 }

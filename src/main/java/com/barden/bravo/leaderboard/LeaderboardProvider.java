@@ -1,6 +1,5 @@
 package com.barden.bravo.leaderboard;
 
-import com.barden.bravo.leaderboard.type.LeaderboardType;
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.PlayerProvider;
 import com.barden.bravo.player.statistics.PlayerStatistics;
@@ -22,21 +21,20 @@ import java.util.concurrent.TimeUnit;
 /**
  * Leaderboard provider class.
  */
-//TODO: will inspect.
 public final class LeaderboardProvider {
 
-    private static final BiMap<LeaderboardType, Leaderboard> content = HashBiMap.create();
+    private static final BiMap<StatisticType, Leaderboard> content = HashBiMap.create();
 
     /**
      * Initializes leaderboard provider class.
      */
     public static void initialize() {
-        //Initializes leaderboards by types.
-        for (LeaderboardType type : LeaderboardType.values())
+        //Initializes leaderboards by statistic types.
+        for (StatisticType type : StatisticType.values())
             content.put(type, new Leaderboard(type, 100));
 
         //Handles scheduler to update leaderboards.
-        SchedulerProvider.create().every(1, TimeUnit.MINUTES).schedule(task -> {
+        SchedulerProvider.create().every(30, TimeUnit.SECONDS).schedule(task -> {
             //Updates leaderboard scores.
             LeaderboardProvider.update(PlayerProvider.getContent());
 
@@ -48,16 +46,15 @@ public final class LeaderboardProvider {
     /**
      * Gets leaderboard by its type.
      *
-     * @param type Leaderboard type.
+     * @param type Statistic type.
      * @return Leaderboard.
      */
     @Nonnull
-    public static Leaderboard get(@Nonnull LeaderboardType type) {
+    public static Leaderboard get(@Nonnull StatisticType type) {
         //Object null checks.
         Objects.requireNonNull(type, "type cannot be null!");
         return Objects.requireNonNull(content.get(type), "leaderboard(" + type.name() + ") cannot be null!");
     }
-
 
     /**
      * Updates player leaderboard scores. (REDIS) (SYNC)
