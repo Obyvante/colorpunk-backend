@@ -29,6 +29,7 @@ public final class Player extends MetadataCachedEntity implements DatabaseObject
     private final PlayerSettings settings;
     private final PlayerStatistics statistics;
     private final PlayerDatabase database;
+    private boolean brand;
 
     /**
      * Creates a player.
@@ -45,6 +46,7 @@ public final class Player extends MetadataCachedEntity implements DatabaseObject
         this.settings = new PlayerSettings(this);
         this.statistics = new PlayerStatistics(this);
         this.database = new PlayerDatabase(this);
+        this.brand = true;
     }
 
     /**
@@ -66,6 +68,7 @@ public final class Player extends MetadataCachedEntity implements DatabaseObject
         this.settings = new PlayerSettings(this, document.getDocument("settings"));
         this.statistics = new PlayerStatistics(this, document.getDocument("statistics"));
         this.database = new PlayerDatabase(this);
+        this.brand = false;
     }
 
     /**
@@ -147,6 +150,23 @@ public final class Player extends MetadataCachedEntity implements DatabaseObject
         return this.database;
     }
 
+    /**
+     * Gets if player is newly created or not.
+     *
+     * @return If player is newly created or not.
+     */
+    public boolean isNew() {
+        return this.brand;
+    }
+
+    /**
+     * Sets new state of player.
+     *
+     * @param brand Is new or not.
+     */
+    public void setNewState(boolean brand) {
+        this.brand = brand;
+    }
 
     /*
     CONVERTERS

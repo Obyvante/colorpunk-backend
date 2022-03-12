@@ -84,20 +84,25 @@ public final class StatisticsUpdater {
             });
 
             //Declares base fields.
-            Point point = Point
-                    .measurement("game")
-                    .time(Instant.now(), WritePrecision.NS);
-            //Handles overall statistics.
-            overall_json_object.entrySet().forEach((entry) -> point.addField(entry.getKey(), entry.getValue().getAsDouble()));
-            //Adds configured point to the list.
-            points.add(point);
+            if (!overall_json_object.entrySet().isEmpty()) {
+                Point point = Point
+                        .measurement("game")
+                        .time(Instant.now(), WritePrecision.NS);
+                //Handles overall statistics.
+                overall_json_object.entrySet().forEach((entry) -> point.addField(entry.getKey(), entry.getValue().getAsDouble()));
+                //Adds configured point to the list.
+                points.add(point);
+            }
+
+            //If points list is empty, no need to fire save execution.
+            if (points.isEmpty())
+                return;
 
             //Writes point.
             DatabaseProvider.influx().getWriteAPIBlocking().writePoints(StatisticsProvider.INDEX_DAILY, DatabaseProvider.influx().getOrganizationId(), points);
         } catch (Exception exception) {
             BardenJavaLibrary.getLogger().error("Couldn't process queue item in statistics updater!", exception);
         } finally {
-            //Marks as completed.
             done = true;
         }
     }

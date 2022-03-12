@@ -1,5 +1,6 @@
 package com.barden.bravo.statistics;
 
+import com.barden.bravo.player.statistics.type.PlayerStatisticType;
 import com.barden.bravo.statistics.type.StatisticType;
 import com.barden.bravo.statistics.updater.StatisticsUpdater;
 import com.barden.library.database.DatabaseProvider;
@@ -61,7 +62,7 @@ public final class StatisticsProvider {
 
             //Declares required fields.
             HashMap<StatisticType, Double> statistics = new HashMap<>();
-            HashMap<String, HashMap<StatisticType, Double>> players_statistics = new HashMap<>();
+            HashMap<String, HashMap<PlayerStatisticType, Double>> players_statistics = new HashMap<>();
             List<Point> points = new ArrayList<>();
 
             //Queries game measurement.
@@ -106,7 +107,7 @@ public final class StatisticsProvider {
                     var user_id = (String) values.get("player");
                     var player_statistics = players_statistics.getOrDefault(user_id, new HashMap<>());
 
-                    for (var statistic : StatisticType.values()) {
+                    for (var statistic : PlayerStatisticType.values()) {
                         //Declares required fields.
                         var previous_value = player_statistics.getOrDefault(statistic, 0.0d);
                         var record_value = (Double) values.get(statistic.name());
@@ -133,17 +134,20 @@ public final class StatisticsProvider {
                 points.add(point);
             });
 
-            //Writes all points to the no retention bucket. (INDEX) (DOWNSAMPLING END)
-            DatabaseProvider.influx().getWriteAPIBlocking().writePoints(INDEX, DatabaseProvider.influx().getOrganizationId(), points);
+            //If there are points to save.
+            if (!points.isEmpty()) {
+                //Writes all points to the no retention bucket. (INDEX) (DOWNSAMPLING END)
+                DatabaseProvider.influx().getWriteAPIBlocking().writePoints(INDEX, DatabaseProvider.influx().getOrganizationId(), points);
 
-            //Deletes game measurement.
-            DatabaseProvider.influx().getClient().getDeleteApi().delete(
-                    OffsetDateTime.now().minusYears(1),
-                    OffsetDateTime.now().plusYears(1),
-                    "",
-                    INDEX_DAILY,
-                    DatabaseProvider.influx().getOrganizationId()
-            );
+                //Deletes game measurement.
+                DatabaseProvider.influx().getClient().getDeleteApi().delete(
+                        OffsetDateTime.now().minusYears(1),
+                        OffsetDateTime.now().plusYears(1),
+                        "",
+                        INDEX_DAILY,
+                        DatabaseProvider.influx().getOrganizationId()
+                );
+            }
 
             //Resets downsampling date again.
             handleRedis();

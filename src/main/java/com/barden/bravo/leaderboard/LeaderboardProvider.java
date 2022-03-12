@@ -3,7 +3,7 @@ package com.barden.bravo.leaderboard;
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.PlayerProvider;
 import com.barden.bravo.player.statistics.PlayerStatistics;
-import com.barden.bravo.statistics.type.StatisticType;
+import com.barden.bravo.player.statistics.type.PlayerStatisticType;
 import com.barden.library.BardenJavaLibrary;
 import com.barden.library.database.DatabaseProvider;
 import com.barden.library.scheduler.SchedulerProvider;
@@ -23,14 +23,14 @@ import java.util.concurrent.TimeUnit;
  */
 public final class LeaderboardProvider {
 
-    private static final BiMap<StatisticType, Leaderboard> content = HashBiMap.create();
+    private static final BiMap<PlayerStatisticType, Leaderboard> content = HashBiMap.create();
 
     /**
      * Initializes leaderboard provider class.
      */
     public static void initialize() {
         //Initializes leaderboards by statistic types.
-        for (StatisticType type : StatisticType.values())
+        for (PlayerStatisticType type : PlayerStatisticType.values())
             content.put(type, new Leaderboard(type, 100));
 
         //Handles scheduler to update leaderboards.
@@ -50,7 +50,7 @@ public final class LeaderboardProvider {
      * @return Leaderboard.
      */
     @Nonnull
-    public static Leaderboard get(@Nonnull StatisticType type) {
+    public static Leaderboard get(@Nonnull PlayerStatisticType type) {
         //Object null checks.
         Objects.requireNonNull(type, "type cannot be null!");
         return Objects.requireNonNull(content.get(type), "leaderboard(" + type.name() + ") cannot be null!");
@@ -80,7 +80,8 @@ public final class LeaderboardProvider {
                 PlayerStatistics statistics = player.getStatistics();
 
                 //Saves player statistics to leaderboard.
-                Arrays.stream(StatisticType.values()).forEach(type -> pipeline.zadd("leaderboard:" + type.name(), statistics.get(type), String.valueOf(player.getId())));
+                Arrays.stream(PlayerStatisticType.values()).forEach(type ->
+                        pipeline.zadd("leaderboard:" + type.name(), statistics.get(type), String.valueOf(player.getId())));
             }
 
             //Executes pipeline.

@@ -1,15 +1,14 @@
-package com.barden.bravo.statistics.type;
+package com.barden.bravo.player.statistics.type;
 
 /**
- * Statistics.
+ * Player statistics.
  */
-public enum StatisticType {
-    UNIQUE_PLAYER_JOINED,
-    PLAYER_JOINED,
-    PLAYER_LEFT,
-
+public enum PlayerStatisticType {
     GAME_PLAYED,
     ROUND_PLAYED,
+
+    WIN,
+    LOSE,
 
     ROBUX_SPENT,
     DONATE,

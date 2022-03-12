@@ -4,7 +4,7 @@ import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.leaderboard.LeaderboardProvider;
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.PlayerProvider;
-import com.barden.bravo.statistics.type.StatisticType;
+import com.barden.bravo.player.statistics.type.PlayerStatisticType;
 import com.google.gson.JsonObject;
 
 import javax.annotation.Nonnull;
@@ -205,13 +205,20 @@ public final class PlayerHTTPFunctionality {
                 json = HTTPResponse.of(true);
 
                 //Converts player as a json object.
-                JsonObject player_json = PlayerProvider.handle(user_id, name, insert).toJsonObject();
+                Player player = PlayerProvider.handle(user_id, name, insert);
+                JsonObject player_json = player.toJsonObject();
 
 
                 /*
                 EXTRAS (STARTS)
                  */
-                player_json.addProperty("rank", LeaderboardProvider.get(StatisticType.WIN).getPlayerRank(user_id));
+
+                if (player.isNew()) {
+                    player_json.addProperty("new", true);
+                    player.setNewState(false);
+                }
+
+                player_json.addProperty("rank", LeaderboardProvider.get(PlayerStatisticType.WIN).getPlayerRank(user_id));
 
                 /*
                 EXTRAS (ENDS)

@@ -3,7 +3,7 @@ package com.barden.bravo.leaderboard.http;
 import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.leaderboard.Leaderboard;
 import com.barden.bravo.leaderboard.LeaderboardProvider;
-import com.barden.bravo.statistics.type.StatisticType;
+import com.barden.bravo.player.statistics.type.PlayerStatisticType;
 import com.barden.library.database.DatabaseProvider;
 import com.barden.library.scheduler.SchedulerProvider;
 import com.google.gson.JsonArray;
@@ -65,7 +65,7 @@ public class LeaderboardHTTP {
             //Handles exceptions.
             try {
                 //Declares required fields.
-                StatisticType type = StatisticType.valueOf(body.get("type").getAsString());
+                PlayerStatisticType type = PlayerStatisticType.valueOf(body.get("type").getAsString());
 
                 //Gets leaderboard.
                 Leaderboard leaderboard = LeaderboardProvider.get(type);

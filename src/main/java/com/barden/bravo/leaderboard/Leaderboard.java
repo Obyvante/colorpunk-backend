@@ -1,7 +1,7 @@
 package com.barden.bravo.leaderboard;
 
 import com.barden.bravo.leaderboard.entry.LeaderboardEntry;
-import com.barden.bravo.statistics.type.StatisticType;
+import com.barden.bravo.player.statistics.type.PlayerStatisticType;
 import com.barden.library.BardenJavaLibrary;
 import com.barden.library.database.DatabaseProvider;
 import com.google.common.collect.BiMap;
@@ -20,7 +20,7 @@ import java.util.*;
  */
 public final class Leaderboard {
 
-    private final StatisticType type;
+    private final PlayerStatisticType type;
     private final BiMap<Long, LeaderboardEntry> users;
     private final int size;
 
@@ -30,7 +30,7 @@ public final class Leaderboard {
      * @param type Statistic type.
      * @param size Leaderboard user size.
      */
-    public Leaderboard(@Nonnull StatisticType type, int size) {
+    public Leaderboard(@Nonnull PlayerStatisticType type, int size) {
         this.type = Objects.requireNonNull(type, "type cannot be null!");
         this.users = HashBiMap.create(size);
         this.size = size;
@@ -44,7 +44,7 @@ public final class Leaderboard {
      * @return Statistic type.
      */
     @Nonnull
-    public StatisticType getType() {
+    public PlayerStatisticType getType() {
         return this.type;
     }
 
