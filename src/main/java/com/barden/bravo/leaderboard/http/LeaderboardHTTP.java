@@ -4,6 +4,7 @@ import com.barden.bravo.http.HTTPResponse;
 import com.barden.bravo.leaderboard.Leaderboard;
 import com.barden.bravo.leaderboard.LeaderboardProvider;
 import com.barden.bravo.player.statistics.type.PlayerStatisticType;
+import com.barden.library.BardenJavaLibrary;
 import com.barden.library.database.DatabaseProvider;
 import com.barden.library.scheduler.SchedulerProvider;
 import com.google.gson.JsonArray;
@@ -20,7 +21,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
-import javax.annotation.Nonnull;
 import java.util.HashMap;
 
 /**
@@ -44,15 +44,12 @@ public class LeaderboardHTTP {
      * @return Response entity. (JSON OBJECT)
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public DeferredResult<ResponseEntity<JsonObject>> get(@Nonnull @RequestBody JsonObject body) {
-        if (body.entrySet().isEmpty())
-            return new DeferredResult<>();
-
+    public DeferredResult<ResponseEntity<JsonObject>> get(@RequestBody JsonObject body) {
         //Creates deferred result.
         DeferredResult<ResponseEntity<JsonObject>> result = new DeferredResult<>();
 
         //Safet check.
-        if (body.entrySet().isEmpty()) {
+        if (body == null || body.isJsonNull() || body.entrySet().isEmpty()) {
             result.setResult(new ResponseEntity<>(HTTPResponse.of(false, Result.INVALID_JSON_STRUCTURE), HttpStatus.OK));
             return result;
         }
@@ -96,7 +93,12 @@ public class LeaderboardHTTP {
                 //Creates json object.
                 json.add("results", leaderboard.toJsonObject());
             } catch (Exception exception) {
-                json = HTTPResponse.of(false, Result.INVALID_JSON_STRUCTURE);
+                //Responses request to avoid long waiting durations.
+                result.setResult(new ResponseEntity<>(HTTPResponse.of(false), HttpStatus.OK));
+
+                //Informs server about the exception. It might be important.
+                BardenJavaLibrary.getLogger().error("Couldn't process leaderboard!", exception);
+                return;
             }
 
             //Sets result.

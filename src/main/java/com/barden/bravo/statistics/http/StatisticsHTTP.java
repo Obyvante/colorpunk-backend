@@ -11,9 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nonnull;
-import java.util.Objects;
-
 /**
  * Statistics HTTP class.
  */
@@ -35,12 +32,9 @@ public class StatisticsHTTP {
      * @return Update result.
      */
     @PostMapping(value = "/updates", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JsonObject> update(@Nonnull @RequestBody JsonObject json_object) {
-        //Objects check null.
-        Objects.requireNonNull(json_object, "statistics json object cannot be null!");
-
+    public ResponseEntity<JsonObject> update(@RequestBody JsonObject json_object) {
         //If json is not valid, returns not successful response entity.
-        if (json_object.isJsonNull() || json_object.keySet().size() == 0)
+        if (json_object == null || json_object.isJsonNull() || json_object.keySet().size() == 0)
             return new ResponseEntity<>(HTTPResponse.of(false, Result.INVALID_JSON_OBJECT), HttpStatus.OK);
 
         //Adds json object to the statistics queue.

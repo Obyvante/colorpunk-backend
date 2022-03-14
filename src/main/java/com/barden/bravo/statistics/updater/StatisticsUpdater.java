@@ -57,49 +57,73 @@ public final class StatisticsUpdater {
 
         //Handles exceptions.
         try {
-
             //Declares base fields.
             List<Point> points = new ArrayList<>();
 
-            //Gets json objects.
-            @Nonnull JsonObject players_json_object = json_object.getAsJsonObject("players");
-            @Nonnull JsonObject overall_json_object = json_object.getAsJsonObject("overall");
-
-            //Handles players statistics.
-            players_json_object.entrySet().forEach((entry) -> {
-                //Declares base fields.
-                Point point = Point
-                        .measurement("players")
-                        .time(Instant.now(), WritePrecision.NS)
-                        .addField("player", "id_" + entry.getKey());
-
+            //Handles process.
+            json_object.entrySet().forEach(entry -> {
                 //Declares required fields.
-                @Nonnull JsonObject user_statistics_json_object = entry.getValue().getAsJsonObject();
+                JsonObject content = entry.getValue().getAsJsonObject();
 
-                //Saves user statistics as a points.
-                user_statistics_json_object.entrySet().forEach((statistic_entry) -> point.addField(statistic_entry.getKey(), statistic_entry.getValue().getAsDouble()));
+                //If the content is empty, no need to continue.
+                if (content.isJsonNull() || content.size() == 0 || content.entrySet().size() == 0)
+                    return;
 
-                //Adds configured point to the list.
-                points.add(point);
+                //Process players statistics.
+                if (entry.getKey().equals("players")) {
+                    //Loops through players.
+                    content.entrySet().forEach((_entry) -> {
+                        //Creates a point.
+                        Point point = Point.measurement(entry.getKey())
+                                .time(Instant.now(), WritePrecision.NS)
+                                .addField("player", "id_" + _entry.getKey());
+
+                        //Declares required fields.
+                        @Nonnull JsonObject user_statistics_json = _entry.getValue().getAsJsonObject();
+
+                        //Saves user statistics as a points.
+                        user_statistics_json.entrySet().forEach((statistic_entry) ->
+                                point.addField(statistic_entry.getKey(), statistic_entry.getValue().getAsDouble()));
+
+                        //Adds configured point to the list.
+                        points.add(point);
+                    });
+                } else if (entry.getKey().equals("game")) {
+                    //Creates a point.
+                    Point point = Point.measurement(entry.getKey()).time(Instant.now(), WritePrecision.NS);
+
+                    //Handles game statistics.
+                    content.entrySet().forEach((_entry) -> point.addField(_entry.getKey(), _entry.getValue().getAsDouble()));
+
+                    //Adds configured point to the list.
+                    points.add(point);
+                } else {
+                    //Creates a point.
+                    Point point = Point.measurement(entry.getKey()).time(Instant.now(), WritePrecision.NS);
+
+                    //Adds measurement fields.
+                    entry.getValue().getAsJsonObject().entrySet().forEach((_entry) -> {
+                        var _primitive = _entry.getValue().getAsJsonPrimitive();
+                        if (_primitive.isNumber())
+                            point.addField(_entry.getKey(), _primitive.getAsDouble());
+                        else if (_primitive.isString())
+                            point.addField(_entry.getKey(), _primitive.getAsString());
+                    });
+
+                    //Adds configured point to the list.
+                    points.add(point);
+                }
             });
-
-            //Declares base fields.
-            if (!overall_json_object.entrySet().isEmpty()) {
-                Point point = Point
-                        .measurement("game")
-                        .time(Instant.now(), WritePrecision.NS);
-                //Handles overall statistics.
-                overall_json_object.entrySet().forEach((entry) -> point.addField(entry.getKey(), entry.getValue().getAsDouble()));
-                //Adds configured point to the list.
-                points.add(point);
-            }
 
             //If points list is empty, no need to fire save execution.
             if (points.isEmpty())
                 return;
 
             //Writes point.
-            DatabaseProvider.influx().getWriteAPIBlocking().writePoints(StatisticsProvider.INDEX_DAILY, DatabaseProvider.influx().getOrganizationId(), points);
+            DatabaseProvider.influx().getWriteAPI().writePoints(
+                    StatisticsProvider.INDEX_DAILY,
+                    DatabaseProvider.influx().getOrganizationId(),
+                    points);
         } catch (Exception exception) {
             BardenJavaLibrary.getLogger().error("Couldn't process queue item in statistics updater!", exception);
         } finally {

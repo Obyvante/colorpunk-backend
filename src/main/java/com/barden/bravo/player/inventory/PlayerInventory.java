@@ -2,6 +2,7 @@ package com.barden.bravo.player.inventory;
 
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.inventory.pet.PlayerPetInventory;
+import com.barden.bravo.player.inventory.product.PlayerProductInventory;
 import com.barden.bravo.player.inventory.trail.PlayerTrailInventory;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.gson.JsonObject;
@@ -18,6 +19,7 @@ public final class PlayerInventory extends MetadataEntity {
     private final Player player;
     private final PlayerPetInventory pet;
     private final PlayerTrailInventory trail;
+    private final PlayerProductInventory product;
 
     /**
      * Creates a player inventory.
@@ -28,6 +30,7 @@ public final class PlayerInventory extends MetadataEntity {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
         this.pet = new PlayerPetInventory(this.player);
         this.trail = new PlayerTrailInventory(this.player);
+        this.product = new PlayerProductInventory(this.player);
     }
 
     /**
@@ -43,6 +46,7 @@ public final class PlayerInventory extends MetadataEntity {
         this.player = Objects.requireNonNull(player, "player cannot be null!");
         this.pet = new PlayerPetInventory(this.player, Objects.requireNonNull(document.getDocument("pets"), "pets bson document cannot be null!"));
         this.trail = new PlayerTrailInventory(this.player, Objects.requireNonNull(document.getDocument("trails"), "trails bson document cannot be null!"));
+        this.product = new PlayerProductInventory(this.player, Objects.requireNonNull(document.getDocument("products"), "products bson document cannot be null!"));
     }
 
     /**
@@ -75,6 +79,15 @@ public final class PlayerInventory extends MetadataEntity {
         return this.trail;
     }
 
+    /**
+     * Gets player product inventory.
+     *
+     * @return Player product inventory.
+     */
+    @Nonnull
+    public PlayerProductInventory getProduct() {
+        return this.product;
+    }
 
     /*
     CONVERTERS
@@ -90,6 +103,7 @@ public final class PlayerInventory extends MetadataEntity {
         JsonObject json = new JsonObject();
         json.add("pets", this.pet.toJsonObject());
         json.add("trails", this.trail.toJsonObject());
+        json.add("products", this.product.toJsonObject());
         return json;
     }
 
@@ -103,6 +117,7 @@ public final class PlayerInventory extends MetadataEntity {
         BsonDocument document = new BsonDocument();
         document.put("pets", this.pet.toBsonDocument());
         document.put("trails", this.trail.toBsonDocument());
+        document.put("products", this.product.toBsonDocument());
         return document;
     }
 
@@ -122,5 +137,6 @@ public final class PlayerInventory extends MetadataEntity {
 
         this.pet.update(json.getAsJsonObject("pets"));
         this.trail.update(json.getAsJsonObject("trails"));
+        this.product.update(json.getAsJsonObject("products"));
     }
 }

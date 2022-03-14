@@ -4,8 +4,10 @@ import com.barden.bravo.cosmetics.pet.PetProvider;
 import com.barden.bravo.cosmetics.trail.TrailProvider;
 import com.barden.bravo.leaderboard.LeaderboardProvider;
 import com.barden.bravo.player.PlayerProvider;
+import com.barden.bravo.product.ProductProvider;
 import com.barden.bravo.settings.Settings;
 import com.barden.bravo.statistics.StatisticsProvider;
+import com.barden.bravo.transaction.provider.TransactionProvider;
 import com.barden.library.BardenJavaLibrary;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -55,9 +57,11 @@ public class ProjectBravo {
 
         //Initializes barden java library.
         BardenJavaLibrary.initialize();
-
         //Initializes settings.
         Settings.initialize();
+
+        //Initializes product provider.
+        ProductProvider.initialize();
         //Initializes pet provider.
         PetProvider.initialize();
         //Initializes trail provider.
@@ -70,6 +74,9 @@ public class ProjectBravo {
         StatisticsProvider.initialize();
         //Initializes leaderboard provider.
         LeaderboardProvider.initialize();
+
+        //Initializes transaction provider.
+        TransactionProvider.initialize();
 
         //Changes initialized field.
         INITIALIZED = true;

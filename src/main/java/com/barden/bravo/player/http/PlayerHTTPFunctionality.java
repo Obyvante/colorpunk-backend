@@ -5,6 +5,7 @@ import com.barden.bravo.leaderboard.LeaderboardProvider;
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.PlayerProvider;
 import com.barden.bravo.player.statistics.type.PlayerStatisticType;
+import com.barden.library.BardenJavaLibrary;
 import com.google.gson.JsonObject;
 
 import javax.annotation.Nonnull;
@@ -108,7 +109,9 @@ public final class PlayerHTTPFunctionality {
             //Returns success
             return HTTPResponse.of(true);
         } catch (Exception exception) {
-            return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
+            //Informs server about the exception. It might be important.
+            BardenJavaLibrary.getLogger().error("Couldn't process player update!", exception);
+            return HTTPResponse.of(false);
         }
     }
 
@@ -155,7 +158,9 @@ public final class PlayerHTTPFunctionality {
             //Returns success
             return HTTPResponse.of(true);
         } catch (Exception exception) {
-            return HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
+            //Informs server about the exception. It might be important.
+            BardenJavaLibrary.getLogger().error("Couldn't process players update!", exception);
+            return HTTPResponse.of(false);
         }
     }
 
@@ -228,7 +233,9 @@ public final class PlayerHTTPFunctionality {
                 //Player provider will handle all heavy work.
                 json.add("results", player_json);
             } catch (Exception exception) {
-                json = HTTPResponse.of(false, Result.INVALID_JSON_OBJECT);
+                //Informs server about the exception. It might be important.
+                BardenJavaLibrary.getLogger().error("Couldn't process player update!", exception);
+                return HTTPResponse.of(false);
             }
         } else {
             json = HTTPResponse.of(false, Result.INVALID_USER_ID);
