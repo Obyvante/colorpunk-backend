@@ -120,12 +120,14 @@ public final class StatisticsUpdater {
                 return;
 
             //Writes point.
-            DatabaseProvider.influx().getWriteAPI().writePoints(
+            DatabaseProvider.influx().getWriteAPIBlocking().writePoints(
                     StatisticsProvider.INDEX_DAILY,
                     DatabaseProvider.influx().getOrganizationId(),
                     points);
         } catch (Exception exception) {
             BardenJavaLibrary.getLogger().error("Couldn't process queue item in statistics updater!", exception);
+            //If there is an error, json object back.
+            queue.add(json_object);
         } finally {
             done = true;
         }
