@@ -12,19 +12,25 @@ public final class Pet {
 
     private final int id;
     private final String name;
-    private final String assetId;
+    private final String iconId;
+    private final String meshId;
+    private final String textureId;
 
     /**
      * Creates pet object.
      *
-     * @param id      Pet id.
-     * @param name    Pet name.
-     * @param assetId Pet asset id. (PACKAGE)
+     * @param id        Pet id.
+     * @param name      Pet name.
+     * @param iconId    Pet icon id. (ROBLOX ASSET ID)
+     * @param meshId    Pet mesh id. (ROBLOX ASSET ID)
+     * @param textureId Pet texture id. (ROBLOX ASSET ID)
      */
-    public Pet(int id, @Nonnull String name, @Nonnull String assetId) {
+    public Pet(int id, @Nonnull String name, @Nonnull String iconId, @Nonnull String meshId, @Nonnull String textureId) {
         this.id = id;
         this.name = Objects.requireNonNull(name, "name cannot be null!");
-        this.assetId = Objects.requireNonNull(assetId, "assetId cannot be null!");
+        this.iconId = Objects.requireNonNull(iconId, "icon id cannot be null!");
+        this.meshId = Objects.requireNonNull(meshId, "mesh id cannot be null!");
+        this.textureId = Objects.requireNonNull(textureId, "texture id cannot be null!");
     }
 
     /**
@@ -47,13 +53,33 @@ public final class Pet {
     }
 
     /**
-     * Gets asset id.
+     * Gets pet icon id.
      *
-     * @return Pet asset id. (PACKAGE)
+     * @return Pet icon id. (ROBLOX ASSET ID)
      */
     @Nonnull
-    public String getAssetId() {
-        return this.assetId;
+    public String getIconId() {
+        return this.iconId;
+    }
+
+    /**
+     * Gets pet mesh id.
+     *
+     * @return Pet mesh id. (ROBLOX ASSET ID)
+     */
+    @Nonnull
+    public String getMeshId() {
+        return this.meshId;
+    }
+
+    /**
+     * Gets pet texture id.
+     *
+     * @return Pet texture id. (ROBLOX ASSET ID)
+     */
+    @Nonnull
+    public String getTextureId() {
+        return this.textureId;
     }
 
     /**
@@ -64,14 +90,16 @@ public final class Pet {
     @Nonnull
     public JsonObject toJsonObject() {
         //Creates json object.
-        JsonObject json_object = new JsonObject();
+        JsonObject json = new JsonObject();
 
         //Configure fields.
-        json_object.addProperty("id", this.id);
-        json_object.addProperty("name", this.name);
-        json_object.addProperty("asset_id", this.assetId);
+        json.addProperty("id", this.id);
+        json.addProperty("name", this.name);
+        json.addProperty("iconId", this.iconId);
+        json.addProperty("meshId", this.meshId);
+        json.addProperty("textureId", this.textureId);
 
         //Returns created json object.
-        return json_object;
+        return json;
     }
 }

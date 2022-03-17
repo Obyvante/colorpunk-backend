@@ -1,12 +1,10 @@
 [1]
 name = "Pet #1"
-assetId = "8476561568"
+iconId = "54378"
+meshId = "3221"
+textyreId = "2331"
 [2]
 name = "Pet #2"
-assetId = "8476561568"
-[3]
-name = "Pet #3"
-assetId = "8476561568"
-[4]
-name = "Pet #4"
-assetId = "8476561568"
+iconId = "33"
+meshId = "1123"
+textyreId = "442"
