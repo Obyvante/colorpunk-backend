@@ -6,14 +6,12 @@ import com.barden.bravo.player.cosmetics.trail.PlayerTrail;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Player trail inventory class.
@@ -73,7 +71,7 @@ public final class PlayerTrailInventory extends MetadataEntity {
      */
     @Nonnull
     public Set<PlayerTrail> getContent() {
-        return this.content.values();
+        return Sets.newHashSet(this.content.values());
     }
 
     /**
@@ -167,18 +165,35 @@ public final class PlayerTrailInventory extends MetadataEntity {
         //Objects null check.
         Objects.requireNonNull(json, "player trail inventory json object cannot be null!");
 
-        //Handles existed player trails.
-        this.content.forEach((key, value) -> {
-            if (json.keySet().contains(key.toString()))
-                value.update(json.getAsJsonObject(key.toString()));
-            else
-                this.remove(key);
+        //Declares required fields.
+        HashMap<UUID, JsonObject> _content = new HashMap<>();
+        json.entrySet().forEach(entry -> _content.put(UUID.fromString(entry.getKey()), entry.getValue().getAsJsonObject()));
+
+        //Removing and updating existing ones.
+        this.getContent().forEach(_item -> {
+            var _uid = _item.getUID();
+
+            //If item is existed, updates it.
+            if (_content.containsKey(_uid)) {
+                _item.update(_content.get(_uid));
+                return;
+            }
+
+            //Removes item.
+            this.remove(_uid);
         });
 
-        //Handles new player trails.
-        json.entrySet().stream().filter(element -> this.find(UUID.fromString(element.getKey())).isEmpty()).forEach(element -> {
-            @Nonnull UUID pet_uid = UUID.fromString(element.getKey());
-            this.content.put(pet_uid, new PlayerTrail(this.player, pet_uid, element.getValue().getAsJsonObject()));
+        //Handles new player items.
+        json.entrySet().forEach(entry -> {
+            //Declares required fields.
+            var _uid = UUID.fromString(entry.getKey());
+
+            //If item is existed, no need to continue.
+            if (this.find(_uid).isPresent())
+                return;
+
+            //Adds item to the player's inventory.
+            this.content.put(_uid, new PlayerTrail(this.player, _uid, entry.getValue().getAsJsonObject()));
         });
     }
 }

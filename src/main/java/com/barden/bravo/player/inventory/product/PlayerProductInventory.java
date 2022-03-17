@@ -6,10 +6,12 @@ import com.barden.bravo.product.ProductProvider;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 import org.bson.BsonDocument;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -71,7 +73,7 @@ public final class PlayerProductInventory extends MetadataEntity {
      */
     @Nonnull
     public Set<PlayerProduct> getContent() {
-        return this.content.values();
+        return Sets.newHashSet(this.content.values());
     }
 
     /**
@@ -174,18 +176,37 @@ public final class PlayerProductInventory extends MetadataEntity {
         //Objects null check.
         Objects.requireNonNull(json, "player product inventory json object cannot be null!");
 
-        //Handles existed player products.
-        this.content.forEach((key, value) -> {
-            if (json.keySet().contains(key.toString()))
-                value.update(json.getAsJsonObject(key.toString()));
-            else
-                this.remove(key);
+        //Declares required fields.
+        HashMap<Long, JsonObject> _content = new HashMap<>();
+        json.entrySet().forEach(entry -> _content.put(Long.parseLong(entry.getKey()), entry.getValue().getAsJsonObject()));
+
+        //Removing and updating existing ones.
+        this.getContent().forEach(_item -> {
+            var _id = _item.getId();
+
+            //If item is existed, updates it.
+            if (_content.containsKey(_id)) {
+                _item.update(_content.get(_id));
+                return;
+            }
+
+            //Removes item.
+            this.remove(_id);
         });
 
-        //Handles new player products.
-        json.entrySet().stream().filter(element -> this.find(Long.parseLong(element.getKey())).isEmpty()).forEach(element -> {
-            long _id = Long.parseLong(element.getKey());
-            this.content.put(_id, new PlayerProduct(this.player, _id, element.getValue().getAsJsonObject().get("amount").getAsInt()));
+        //Handles new player items.
+        json.entrySet().forEach(entry -> {
+            //Declares required fields.
+            var _id = Long.parseLong(entry.getKey());
+
+            //If item is existed, no need to continue.
+            if (this.find(_id).isPresent())
+                return;
+
+            var _json = entry.getValue().getAsJsonObject();
+
+            //Adds item to the player's inventory.
+            this.content.put(_id, new PlayerProduct(this.player, _id, _json.get("amount").getAsInt()));
         });
     }
 }
