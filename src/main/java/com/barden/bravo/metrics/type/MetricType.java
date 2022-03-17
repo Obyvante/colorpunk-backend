@@ -1,9 +1,9 @@
-package com.barden.bravo.statistics.type;
+package com.barden.bravo.metrics.type;
 
 /**
  * Statistics.
  */
-public enum StatisticType {
+public enum MetricType {
     ROBLOX_SERVER_OPEN_DURATION,
 
     FAILED_HEALTH_CHECK_REQUEST,

@@ -1,8 +1,8 @@
 package com.barden.bravo.transaction.http;
 
 import com.barden.bravo.http.HTTPResponse;
+import com.barden.bravo.metrics.TransactionMetrics;
 import com.barden.bravo.transaction.Transaction;
-import com.barden.bravo.transaction.provider.TransactionStatisticsProvider;
 import com.barden.library.BardenJavaLibrary;
 import com.barden.library.scheduler.SchedulerProvider;
 import com.google.gson.JsonObject;
@@ -46,7 +46,7 @@ public class TransactionHTTP {
                 transaction.save();
 
                 //Statistics.
-                TransactionStatisticsProvider.write(transaction);
+                TransactionMetrics.write(transaction);
             } catch (Exception exception) {
                 //Responses request to avoid long waiting durations.
                 result.setResult(new ResponseEntity<>(HTTPResponse.of(false), HttpStatus.OK));

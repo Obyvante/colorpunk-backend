@@ -6,7 +6,7 @@ import com.barden.bravo.leaderboard.LeaderboardProvider;
 import com.barden.bravo.player.PlayerProvider;
 import com.barden.bravo.product.ProductProvider;
 import com.barden.bravo.settings.Settings;
-import com.barden.bravo.statistics.StatisticsProvider;
+import com.barden.bravo.metrics.MetricsProvider;
 import com.barden.bravo.transaction.provider.TransactionProvider;
 import com.barden.library.BardenJavaLibrary;
 import org.springframework.boot.SpringApplication;
@@ -55,28 +55,33 @@ public class ProjectBravo {
         //Runs spring application.
         SpringApplication.run(ProjectBravo.class, Objects.requireNonNull(arguments, "arguments cannot be null!"));
 
-        //Initializes barden java library.
-        BardenJavaLibrary.initialize();
-        //Initializes settings.
-        Settings.initialize();
+        try {
+            //Initializes barden java library.
+            BardenJavaLibrary.initialize();
+            //Initializes settings.
+            Settings.initialize();
 
-        //Initializes product provider.
-        ProductProvider.initialize();
-        //Initializes pet provider.
-        PetProvider.initialize();
-        //Initializes trail provider.
-        TrailProvider.initialize();
+            //Initializes product provider.
+            ProductProvider.initialize();
+            //Initializes pet provider.
+            PetProvider.initialize();
+            //Initializes trail provider.
+            TrailProvider.initialize();
 
-        //Initializes player provider.
-        PlayerProvider.initialize();
+            //Initializes player provider.
+            PlayerProvider.initialize();
 
-        //Initializes statistics provider.
-        StatisticsProvider.initialize();
-        //Initializes leaderboard provider.
-        LeaderboardProvider.initialize();
+            //Initializes statistics provider.
+            MetricsProvider.initialize();
+            //Initializes leaderboard provider.
+            LeaderboardProvider.initialize();
 
-        //Initializes transaction provider.
-        TransactionProvider.initialize();
+            //Initializes transaction provider.
+            TransactionProvider.initialize();
+        } catch (Exception exception) {
+            BardenJavaLibrary.getLogger().error("Couldn't start project bravo!", exception);
+            return;
+        }
 
         //Changes initialized field.
         INITIALIZED = true;

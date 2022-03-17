@@ -1,5 +1,6 @@
 package com.barden.bravo.player;
 
+import com.barden.bravo.metrics.PlayerMetrics;
 import com.barden.library.BardenJavaLibrary;
 import com.barden.library.scheduler.SchedulerProvider;
 import com.google.common.collect.BiMap;
@@ -41,7 +42,10 @@ public final class PlayerProvider {
      * Initializes player provider.
      */
     public static void initialize() {
+        //Initializes mongo provider.
         PlayerProvider.getMongoProvider().addIndex(Indexes.ascending("id"), new IndexOptions().unique(true).background(true));
+        //Initializes timescale provider.
+        PlayerMetrics.initialize();
 
         //Pushes players updated data to mongo.
         SchedulerProvider.create()
