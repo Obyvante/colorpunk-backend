@@ -7,6 +7,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,7 +26,15 @@ public final class ProductProvider {
                 //Gets required fields.
                 CommentedConfig _config = file.get(_file.getKey());
                 long id = Long.parseLong(_file.getKey());
+                String type = _config.get("type");
+                String name = _config.get("name");
+                boolean item = _config.get("item");
                 int cap = _config.get("cap");
+
+                HashMap<String, String> metadata = new HashMap<>();
+                CommentedConfig _metadata = _config.get("metadata");
+                if (_metadata != null)
+                    _metadata.entrySet().forEach(entry -> metadata.put(entry.getKey(), entry.getValue().toString()));
 
                 //Checks duplicate items.
                 if (ProductProvider.find(id).isPresent()) {
@@ -34,7 +43,7 @@ public final class ProductProvider {
                 }
 
                 //Creates new product then adds to the content list.
-                content.put(id, new Product(id, cap));
+                content.put(id, new Product(id, type, name, item, cap, metadata));
             });
         });
 

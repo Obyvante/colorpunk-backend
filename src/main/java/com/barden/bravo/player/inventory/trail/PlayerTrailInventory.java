@@ -3,6 +3,7 @@ package com.barden.bravo.player.inventory.trail;
 import com.barden.bravo.cosmetics.trail.TrailProvider;
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.cosmetics.trail.PlayerTrail;
+import com.barden.bravo.player.inventory.PlayerInventory;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -70,8 +71,24 @@ public final class PlayerTrailInventory extends MetadataEntity {
      * @return Player trails.
      */
     @Nonnull
-    public Set<PlayerTrail> getContent() {
+    public HashSet<PlayerTrail> getContent() {
         return Sets.newHashSet(this.content.values());
+    }
+
+    /**
+     * Gets player trails by its state.
+     *
+     * @param state Player trail state.
+     * @return Player trails.
+     */
+    @Nonnull
+    public HashSet<PlayerTrail> getContentByState(boolean state) {
+        HashSet<PlayerTrail> _content = new HashSet<>();
+        this.content.values().forEach(value -> {
+            if (value.isActive() == state)
+                _content.add(value);
+        });
+        return _content;
     }
 
     /**
@@ -106,6 +123,9 @@ public final class PlayerTrailInventory extends MetadataEntity {
     public PlayerTrail add(int id) {
         if (TrailProvider.find(id).isEmpty())
             throw new NullPointerException("trail(" + id + ") does not exist!");
+
+        if (this.content.size() >= PlayerInventory.INVENTORY_SIZE)
+            throw new IllegalStateException("player(" + this.player.getId() + ") inventory size must be equals or lower than " + PlayerInventory.INVENTORY_SIZE);
 
         PlayerTrail trail = new PlayerTrail(this.player, UUID.randomUUID(), id, false);
         this.content.put(trail.getUID(), trail);

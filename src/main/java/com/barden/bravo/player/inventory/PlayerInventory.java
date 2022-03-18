@@ -16,6 +16,8 @@ import java.util.Objects;
  */
 public final class PlayerInventory extends MetadataEntity {
 
+    public static final int INVENTORY_SIZE = 27;
+
     private final Player player;
     private final PlayerPetInventory pet;
     private final PlayerTrailInventory trail;

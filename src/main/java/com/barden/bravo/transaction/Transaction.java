@@ -1,10 +1,7 @@
 package com.barden.bravo.transaction;
 
 import com.barden.library.database.DatabaseProvider;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.JsonObject;
-import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import javax.annotation.Nonnull;
 import java.util.Date;

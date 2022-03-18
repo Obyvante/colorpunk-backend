@@ -3,6 +3,7 @@ package com.barden.bravo.player.inventory.pet;
 import com.barden.bravo.cosmetics.pet.PetProvider;
 import com.barden.bravo.player.Player;
 import com.barden.bravo.player.cosmetics.pet.PlayerPet;
+import com.barden.bravo.player.inventory.PlayerInventory;
 import com.barden.library.metadata.MetadataEntity;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -75,6 +76,22 @@ public final class PlayerPetInventory extends MetadataEntity {
     }
 
     /**
+     * Gets player pets by its state.
+     *
+     * @param state Player pet state.
+     * @return Player pets.
+     */
+    @Nonnull
+    public HashSet<PlayerPet> getContentByState(boolean state) {
+        HashSet<PlayerPet> _content = new HashSet<>();
+        this.content.values().forEach(value -> {
+            if (value.isActive() == state)
+                _content.add(value);
+        });
+        return _content;
+    }
+
+    /**
      * Finds player pet. (SAFE)
      *
      * @param uid Player pet unique id.
@@ -106,6 +123,9 @@ public final class PlayerPetInventory extends MetadataEntity {
     public PlayerPet add(int id) {
         if (PetProvider.find(id).isEmpty())
             throw new NullPointerException("pet(" + id + ") does not exist!");
+
+        if (this.content.size() >= PlayerInventory.INVENTORY_SIZE)
+            throw new IllegalStateException("player(" + this.player.getId() + ") inventory size must be equals or lower than " + PlayerInventory.INVENTORY_SIZE);
 
         PlayerPet pet = new PlayerPet(this.player, UUID.randomUUID(), id, false);
         this.content.put(pet.getUID(), pet);
