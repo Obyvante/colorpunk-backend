@@ -16,16 +16,12 @@ at the moment)
 
 ### Building
 
-To get started with Barden Java Library, download the source code and run the following commands:
+To run Colorpunk, you required to have [Barden Java Library](https://github.com/Obyvante/barden-java-library) dependency. Gradle file has already one, you only need to build and publish.
+
+To get started with Colorpunk, download the source code and run the following commands:
 
 ```bash
 ./gradlew clean build
-```
-
-Then, if there are no errors, you can run the following command to publish the library to Maven Local:
-
-```bash
-gradle publishToMavenLocal
 ```
 
 ### Javadocs
