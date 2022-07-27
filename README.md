@@ -26,3 +26,6 @@ To get started with Colorpunk, download the source code and run the following co
 
 ### Javadocs
 You can see Javadocs [here](https://obyvante.github.io/colorpunk/).
+
+## Related Projects
+- [Barden Java Library](https://github.com/Obyvante/barden-java-library)
