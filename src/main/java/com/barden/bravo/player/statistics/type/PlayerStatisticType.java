@@ -7,6 +7,9 @@ public enum PlayerStatisticType {
     GAME_PLAYED,
     ROUND_PLAYED,
 
+    PLAYTIME,
+    GAME_PLAYTIME,
+
     WIN,
     LOSE,
 
@@ -15,8 +18,8 @@ public enum PlayerStatisticType {
 
     GOLD_EARNED,
 
-    ROBUX_CHEST_OPENED,
-    ROBUX_EGG_OPENED,
+    PREMIUM_CHEST_OPENED,
+    PREMIUM_EGG_OPENED,
 
     BASIC_CHEST_OPENED,
     BASIC_EGG_OPENED

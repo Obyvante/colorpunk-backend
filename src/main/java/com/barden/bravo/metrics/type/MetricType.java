@@ -18,7 +18,12 @@ public enum MetricType {
     PLAYER_JOINED,
     PLAYER_LEFT,
 
+    PLAYTIME,
+    GAME_PLAYTIME,
+
     GAME_START_TIME,
+    GAME_COMPLETE_TIME,
+
     GAME_PLAYED,
     ROUND_PLAYED,
 

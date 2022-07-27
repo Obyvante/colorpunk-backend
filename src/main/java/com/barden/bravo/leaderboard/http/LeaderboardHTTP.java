@@ -22,6 +22,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Leaderboard HTTP class.
@@ -84,7 +85,12 @@ public class LeaderboardHTTP {
                     }
 
                     //Writes player ranks to the rank json.
-                    rank_responses.forEach((key, value) -> ranks_json.addProperty(key, value.get() + 1));
+                    rank_responses.forEach((key, value) -> {
+                        try {
+                            ranks_json.addProperty(key, Objects.requireNonNullElse(value.get(), 999L) + 1);
+                        } catch (Exception ignored) {
+                        }
+                    });
 
                     //Adds response to the base json.
                     json.add("responses", ranks_json);
