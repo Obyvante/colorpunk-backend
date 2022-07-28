@@ -2,10 +2,10 @@
   <img src="https://user-images.githubusercontent.com/45916622/181359341-8374b986-7441-4022-99cb-4d7c4483bb77.png">
 </p>
 
-## What is Bravo(Colorpunk)?
+## What is Bravo(Colorpunk) Backend?
 
 Bravo is a project name for Colorpunk Roblox game project. This project is not an API. It is fully completed backend
-endpoint for Roblox game with fixed structure.
+endpoint for Colorpunk Roblox game with fixed structure.
 
 **Game:** https://www.roblox.com/games/8442630050/Colorpunk (Backend servers are not active, it is not possible to connect
 at the moment)
