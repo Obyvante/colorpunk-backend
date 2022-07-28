@@ -21,7 +21,7 @@ To run Colorpunk, you required to have [Barden Java Library](https://github.com/
 To get started with Colorpunk, download the source code and run the following commands:
 
 ```bash
-./gradlew clean build
+$ ./gradlew clean build
 ```
 
 ### Javadocs
